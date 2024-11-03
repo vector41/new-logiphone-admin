@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\LogiScope\CompanyEmployee;
 use App\Models\LogiPhone\LPCall;
 use App\Models\LogiPhone\LPSms;
+use Illuminate\Support\Facades\Log;
 
 class AndroidWebSocketsHandler implements MessageComponentInterface
 {
@@ -53,9 +54,9 @@ class AndroidWebSocketsHandler implements MessageComponentInterface
             $temp = array();
             
             for ($i = 0; $i < count($list); $i++) {
-                $count = CompanyEmployee::where('tel1', '=', $list[$i])
-                                        ->orWhere('tel2', '=', $list[$i])
-                                        ->orWhere('tel3', '=', $list[$i])
+                $count = CompanyEmployee::where(DB::raw("REGEXP_REPLACE(tel1, '[^0-9]', '')"), '=', $list[$i])
+                                        ->orWhere(DB::raw("REGEXP_REPLACE(tel2, '[^0-9]', '')"), '=', $list[$i])
+                                        ->orWhere(DB::raw("REGEXP_REPLACE(tel3, '[^0-9]', '')"), '=', $list[$i])
                                         ->count();
 
                 if($count > 0) array_push($temp, $list[$i]);
