@@ -42,7 +42,6 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-
 // app user controller
 Route::get('/app/getAllUsers', [SupplierController::class, 'getAllUsers']);
 
@@ -87,3 +86,12 @@ Route::post('/app/insertSms', [SmsController::class, 'insertSms']);
 // server info
 // makoto@tejima.jp
 // test
+
+
+
+//// ***** android app codes ********** ////
+
+// Android get all user list
+Route::get('/getAllUsersByPage', [EmployeeController::class, 'getAllUsersByPage']);
+// get user details
+Route::get('/getSpecificUser?keyword={keyword}', [EmployeeController::class, 'getSpecificUser']);

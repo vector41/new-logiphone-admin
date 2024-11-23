@@ -37,25 +37,25 @@ class EmployeeController extends Controller
             $user_id = 1;
             $user_company_id = CompanyEmployee::find($user_id)->company_id;
             $users_from_company = CompanyEmployee::where("company_id", $user_company_id)->select('id')->get();
-            $user_ids = $users_from_company->map(function ($user){
+            $user_ids = $users_from_company->map(function ($user) {
                 return $user->id;
             })->toArray();
 
             $datas = CompanyEmployee::with(["companyBranch"])
-                                ->where(function ($builder) {
-                                    $builder->orWhereNull("company_employees.is_retirement");
-                                    $builder->orWhere("company_employees.is_retirement", "<>", 1);
-                                })
-                                ->whereHas('companyBranch', function ($query) use ($user_ids) {
-                                    $query->orWhereIn("updated_id", $user_ids);
-                                })->orderBy("id", "desc")->limit(40)->get();
+                ->where(function ($builder) {
+                    $builder->orWhereNull("company_employees.is_retirement");
+                    $builder->orWhere("company_employees.is_retirement", "<>", 1);
+                })
+                ->whereHas('companyBranch', function ($query) use ($user_ids) {
+                    $query->orWhereIn("updated_id", $user_ids);
+                })->orderBy("id", "desc")->limit(40)->get();
 
             $response_2 = $datas->map(function ($employeer) {
                 return [
                     'id' => $employeer->id,
-                    'store_pos' =>2,    // 2: logiscope  1:logiphone...
-                    'person_name' => $employeer->person_name_second.' '.$employeer->person_name_first,
-                    'tel' =>  $employeer->tel1!="--"?$employeer->tel1:$employeer->tel2,
+                    'store_pos' => 2,    // 2: logiscope  1:logiphone...
+                    'person_name' => $employeer->person_name_second . ' ' . $employeer->person_name_first,
+                    'tel' =>  $employeer->tel1 != "--" ? $employeer->tel1 : $employeer->tel2,
                     'email' => $employeer->email,
                 ];
             });
@@ -63,17 +63,17 @@ class EmployeeController extends Controller
             $lp_company_branches = LPCompanyBranch::where("company_id", $user_company_id)->get();
 
             $datas = LPCompanyEmployee::with(["company", "companyBranch"])
-                                ->orderBy("id", "DESC")->limit(40)->get()->append(["employment_roles"]);
+                ->orderBy("id", "DESC")->limit(40)->get()->append(["employment_roles"]);
             $response_1 = $datas->map(function ($employeer) {
                 return [
                     'id' => $employeer->id,
-                    'store_pos' =>1,    // 2: logiscope  1:logiphone...
-                    'person_name' => $employeer->person_name_second.' '.$employeer->person_name_first,
-                    'tel' => $employeer->tel1!="--"?$employeer->tel1:$employeer->tel2,
+                    'store_pos' => 1,    // 2: logiscope  1:logiphone...
+                    'person_name' => $employeer->person_name_second . ' ' . $employeer->person_name_first,
+                    'tel' => $employeer->tel1 != "--" ? $employeer->tel1 : $employeer->tel2,
                     'email' => $employeer->email,
                 ];
             });
-            $response = count($response_1)?$response_1->merge($response_2):$response_2;
+            $response = count($response_1) ? $response_1->merge($response_2) : $response_2;
             // return response()->json($response->toArray());
             return  $ApiClass->responseOk([
                 "response" => $response
@@ -85,9 +85,10 @@ class EmployeeController extends Controller
         }
     }
 
-    function getRolesFromEmployeeRole($employeerRoles){
+    function getRolesFromEmployeeRole($employeerRoles)
+    {
         $roles = [];
-        foreach($employeerRoles as $role){
+        foreach ($employeerRoles as $role) {
             array_push($roles, $role->role);
         }
         return $roles;
@@ -111,13 +112,13 @@ class EmployeeController extends Controller
     public function get(ApiClass $ApiClass, Request $request)
     {
         //法人情報
-        $store_pos= $request->store_pos;
+        $store_pos = $request->store_pos;
         $id = $request->_id;
 
-        $CompanyEmployee = $store_pos==2?CompanyEmployee::where("id", $id)->first()
-                ->append(["employment_roles"]):LPCompanyEmployee::where("id", $id)->first()
-                ->append(["employment_roles"]);
-            //  ->append(["job_changes", "employment_roles", "board_member", "resume", "license", "photo", "name_card", "other_file"]);
+        $CompanyEmployee = $store_pos == 2 ? CompanyEmployee::where("id", $id)->first()
+            ->append(["employment_roles"]) : LPCompanyEmployee::where("id", $id)->first()
+            ->append(["employment_roles"]);
+        //  ->append(["job_changes", "employment_roles", "board_member", "resume", "license", "photo", "name_card", "other_file"]);
 
         return $ApiClass->responseOk([
             "response" => $CompanyEmployee,
@@ -205,14 +206,14 @@ class EmployeeController extends Controller
             foreach ($roles as $key => $role) {
                 # code...
                 LPCompanyEmployeeRole::create([
-                    "company_employee_id"=> $employee_id,
-                    "role"=>$role,
+                    "company_employee_id" => $employee_id,
+                    "role" => $role,
                 ]);
             }
 
             DB::commit();
 
-            return $ApiClass->responseOk(['id'=>$employee_id]);
+            return $ApiClass->responseOk(['id' => $employee_id]);
         } catch (\Exception $e) {
             Log::info($e);
             return $ApiClass->responseError("保存に失敗しました");
@@ -232,58 +233,56 @@ class EmployeeController extends Controller
             $type = $request->type;
             $branch_id = $request->id;
             $response = [];
-            if($type==1){
+            if ($type == 1) {
                 $datas = LPCompanyEmployee::where("company_branch_id", $branch_id)->get()
-                                    ->append(["employment_roles"]);
+                    ->append(["employment_roles"]);
                 $response = $datas->map(function ($employeer) {
                     return [
                         'id' => $employeer->id,
-                        'register'=> CompanyEmployee::find($employeer->created_id)->person_name_second??'',
-                        'updater'=>  CompanyEmployee::find($employeer->updated_id)->person_name_second??'',
-                        'created_at'=> $employeer->created_at,
-                        'updated_at'=> $employeer->updated_at,
-                        'person_name' => $employeer->person_name_second.' '.$employeer->person_name_first,
-                        'person_name_kana' => $employeer->person_name_second_kana.' '.$employeer->person_name_first_kana,
+                        'register' => CompanyEmployee::find($employeer->created_id)->person_name_second ?? '',
+                        'updater' =>  CompanyEmployee::find($employeer->updated_id)->person_name_second ?? '',
+                        'created_at' => $employeer->created_at,
+                        'updated_at' => $employeer->updated_at,
+                        'person_name' => $employeer->person_name_second . ' ' . $employeer->person_name_first,
+                        'person_name_kana' => $employeer->person_name_second_kana . ' ' . $employeer->person_name_first_kana,
                         'tel' => $employeer->tel1,
                         'email' => $employeer->email,
                         'position' => $employeer->position,
                         'gender' => $employeer->gender,
-                        'roles'=>$employeer->employment_roles,
-                        'is_retirement'=>0,
+                        'roles' => $employeer->employment_roles,
+                        'is_retirement' => 0,
                     ];
                 });
-                return $ApiClass->responseOk(['response'=>$response]);
-            }else{
+                return $ApiClass->responseOk(['response' => $response]);
+            } else {
                 $datas = CompanyEmployee::where("company_branch_id", $branch_id)->get()
-                                    ->append(["employment_roles"]);
+                    ->append(["employment_roles"]);
                 $response = $datas->map(function ($employeer) {
                     return [
                         'id' => $employeer->id,
-                        'register'=> CompanyEmployee::find($employeer->created_id)->person_name_second??'',
-                        'updater'=>  CompanyEmployee::find($employeer->updated_id)->person_name_second??'',
-                        'created_at'=> $employeer->created_at,
-                        'updated_at'=> $employeer->updated_at,
-                        'person_name' => $employeer->person_name_second.' '.$employeer->person_name_first,
-                        'person_name_kana' => $employeer->person_name_second_kana.' '.$employeer->person_name_first_kana,
+                        'register' => CompanyEmployee::find($employeer->created_id)->person_name_second ?? '',
+                        'updater' =>  CompanyEmployee::find($employeer->updated_id)->person_name_second ?? '',
+                        'created_at' => $employeer->created_at,
+                        'updated_at' => $employeer->updated_at,
+                        'person_name' => $employeer->person_name_second . ' ' . $employeer->person_name_first,
+                        'person_name_kana' => $employeer->person_name_second_kana . ' ' . $employeer->person_name_first_kana,
                         'tel' => $employeer->tel1,
                         'email' => $employeer->email,
                         'position' => $employeer->position,
                         'gender' => $employeer->gender,
-                        'roles'=>$employeer->employment_roles,
-                        'is_retirement'=>$employeer->is_retirement
+                        'roles' => $employeer->employment_roles,
+                        'is_retirement' => $employeer->is_retirement
                     ];
                 });
-                return $ApiClass->responseOk(['response'=>$response]);
+                return $ApiClass->responseOk(['response' => $response]);
             }
-
-
         } catch (\Exception $e) {
             Log::info($e);
             return $ApiClass->responseError("保存に失敗しました");
         }
     }
 
-        /**
+    /**
      * 連絡先
      * @param  ApiClass  $ApiClass
      * @param  Request  $request
@@ -291,7 +290,7 @@ class EmployeeController extends Controller
      */
     public function updateEmployeer(ApiClass $ApiClass, Request $request)
     {
-        try{
+        try {
             DB::beginTransaction();
             $employeer = $request->employeer;
             $type = $employeer['store_pos'];
@@ -299,34 +298,34 @@ class EmployeeController extends Controller
             if (!$roles) {
                 $roles = [];
             }
-            if($type==1){
+            if ($type == 1) {
                 $LPCompanyemployeer = LPCompanyEmployee::firstOrNew(["id" => getVariable($employeer, "id")]);
                 $LPCompanyemployeer->inputToModel($employeer);
                 $LPCompanyemployeer->save();
 
                 $employee_id = $LPCompanyemployeer->id;
-                LPCompanyEmployeeRole::where("company_employee_id", $employee_id)->whereNotIn('role',$roles)->delete();
+                LPCompanyEmployeeRole::where("company_employee_id", $employee_id)->whereNotIn('role', $roles)->delete();
                 foreach ($roles as $key => $role) {
                     # code...
-                    if(LPCompanyEmployeeRole::where("company_employee_id",$employee_id)->where("role",$role)->exists()==false){
+                    if (LPCompanyEmployeeRole::where("company_employee_id", $employee_id)->where("role", $role)->exists() == false) {
                         LPCompanyEmployeeRole::create([
-                            "company_employee_id"=> $employee_id,
-                            "role"=>$role,
+                            "company_employee_id" => $employee_id,
+                            "role" => $role,
                         ]);
                     }
                 }
-            }else{
+            } else {
                 $Companyemployeer = CompanyEmployee::firstOrNew(["id" => getVariable($employeer, "id")]);
                 $Companyemployeer->inputToModel($employeer);
                 $Companyemployeer->save();
                 $employee_id = $Companyemployeer->id;
-                CompanyEmployeeRole::where("company_employee_id", $employee_id)->whereNotIn('role',$roles)->delete();
+                CompanyEmployeeRole::where("company_employee_id", $employee_id)->whereNotIn('role', $roles)->delete();
                 foreach ($roles as $key => $role) {
                     # code...
-                    if(CompanyEmployeeRole::where("company_employee_id",$employee_id)->where("role",$role)->exists()==false){
+                    if (CompanyEmployeeRole::where("company_employee_id", $employee_id)->where("role", $role)->exists() == false) {
                         CompanyEmployeeRole::create([
-                            "company_employee_id"=> $employee_id,
-                            "role"=>$role,
+                            "company_employee_id" => $employee_id,
+                            "role" => $role,
                         ]);
                     }
                 }
@@ -334,9 +333,28 @@ class EmployeeController extends Controller
 
             DB::commit();
             return $ApiClass->responseOk(["id" => $employeer["id"]]);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             Log::info($e);
             return $ApiClass->responseError($e->getMessage());
         }
+    }
+
+    // android code 
+    public function getAllUsersByPage(Request $request)
+    {
+        Log::info("message");
+        $users = CompanyEmployee::paginate(50);
+        return response()->json($users);
+    }
+
+    public function getSpecificUser(Request $request)
+    {
+        $searchIndex = $request->route('keyword');
+        $users = CompanyEmployee::where('tel1', '=', $searchIndex)
+                                ->orWhere('tel2', '=', $searchIndex)
+                                ->orWhere('tel3', '=', $searchIndex)
+                                ->get();
+
+        return response()->json($users);
     }
 }
