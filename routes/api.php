@@ -7,6 +7,9 @@ use App\Http\Controllers\API\FavoriteController;
 use App\Http\Controllers\API\SupplierController;
 use App\Http\Controllers\API\CallController;
 use App\Http\Controllers\API\SmsController;
+use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Models\LogiPhone\Favorite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -95,3 +98,9 @@ Route::post('/app/insertSms', [SmsController::class, 'insertSms']);
 Route::get('/getAllUsersByPage', [EmployeeController::class, 'getAllUsersByPage']);
 // get user details
 Route::get('/getSpecificUser?keyword={keyword}', [EmployeeController::class, 'getSpecificUser']);
+
+
+
+// Android Apis
+Route::get('/login', [UserController::class, 'login']);
+Route::get('/get-favorite-list', [FavoriteController::class, 'getAllFavoriteUsersBySpecificUser']);

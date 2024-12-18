@@ -426,31 +426,6 @@ const handlePageChange = async (event) => {
                   placeholder="全て表示"
                   class="w-52 !"
                 />
-                <!-- <div>
-                  <InputText
-                    type="text"
-                    class="w-40 relative"
-                    placeholder="業種"
-                    @click="toggleTypePanel"
-                  />
-                  <div
-                    v-show="isTypeShow"
-                    class="absolute rounded-md z-50 bg-white border shadow-md mt-1 w-auto py-1 px-2"
-                  >
-                    <div
-                      v-for="typeCategory in currentCategories"
-                      :key="typeCategory.id"
-                      class="flex items-center justify-between py-1 pl-1"
-                    >
-                      <span>{{ typeCategory.name }}</span>
-                      <Checkbox
-                        v-model="typeCategory.checked"
-                        :binary="true"
-                        class="mx-3"
-                      />
-                    </div>
-                  </div>
-                </div> -->
                 <InputText
                   type="text"
                   class="w-64"

@@ -342,7 +342,6 @@ class EmployeeController extends Controller
     // android code 
     public function getAllUsersByPage(Request $request)
     {
-        Log::info("message");
         $users = CompanyEmployee::paginate(50);
         return response()->json($users);
     }

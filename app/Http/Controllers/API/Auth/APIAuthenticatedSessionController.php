@@ -25,7 +25,7 @@ class APIAuthenticatedSessionController extends Controller
             $authUser->tokens()->delete();
             $token =  $authUser->createToken($authUser->email)->plainTextToken;
 
-            return response()->json(['token'=>$token,'user'=>$authUser], 200);
+            return response()->json(['token' => $token, 'user' => $authUser], 200);
         } else {
             return response()->json(['error' => 'Unauthorised'], 401);
         }
@@ -36,7 +36,7 @@ class APIAuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request)
     {
-        auth()->user()->tokens()->delete();
-        return response()->json(['ok'], 200);
+        // auth()->user()->tokens()->delete();
+        // return response()->json(['ok'], 200);
     }
 }

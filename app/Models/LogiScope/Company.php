@@ -13,8 +13,6 @@ class Company extends OriginalClass
     use SoftDeletes;
     use SoftCascadeTrait;
 
-
-
     protected $softCascade = ['children'];
 
     protected $guarded = ['id'];

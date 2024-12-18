@@ -6,6 +6,7 @@ use App\Libs\Common\ApiClass;
 use App\Models\LogiPhone\Favorite;
 use App\Models\LogiPhone\LPCompanyBranch;
 use App\Models\LogiPhone\LPCompanyEmployee;
+use App\Models\LogiPhone\LPFavorite;
 use App\Models\LogiScope\CompanyBranch;
 use App\Models\LogiScope\CompanyEmployee;
 use Illuminate\Http\RedirectResponse;
@@ -17,31 +18,31 @@ use Illuminate\Support\Facades\Redirect;
 class FavoriteController extends Controller
 {
 
-        /**
+    /**
      * Update the user's profile information.
      */
     public function list(ApiClass $ApiClass, Request $request)
     {
         try {
 
-            $favorites = Favorite::where('employeer',$request->employeer)->orderBy('id')->get();
+            $favorites = Favorite::where('employeer', $request->employeer)->orderBy('id')->get();
             $favorite_datas = $favorites->map(function ($fav) {
                 $favorite_detail = null;
-                if($fav->main_cat==1&&$fav->emp_pos==1){
+                if ($fav->main_cat == 1 && $fav->emp_pos == 1) {
                     $favorite_detail = LPCompanyBranch::with('company')->find($fav->fovoriter);
-                }else if($fav->main_cat==1&&$fav->emp_pos==2){
+                } else if ($fav->main_cat == 1 && $fav->emp_pos == 2) {
                     $favorite_detail = CompanyBranch::with('company')->find($fav->fovoriter);
-                }else if($fav->main_cat==2&&$fav->emp_pos==1){
+                } else if ($fav->main_cat == 2 && $fav->emp_pos == 1) {
                     $favorite_detail = LPCompanyEmployee::find($fav->fovoriter);
-                }else{
+                } else {
                     $favorite_detail = CompanyEmployee::find($fav->fovoriter);
                 }
                 return [
-                    'id'=>$favorite_detail->id,
-                    'store_pos'=>$fav->fav_pos,
-                    'main_cat'=>$fav->main_cat,
-                    'name'=>$fav->main_cat==1?$favorite_detail->company->company_name_full_short:$favorite_detail->person_name_second.$favorite_detail->person_name_first,
-                    'tel'=>$fav->main_cat==1?$favorite_detail->tel:$favorite_detail->tel1,
+                    'id' => $favorite_detail->id,
+                    'store_pos' => $fav->fav_pos,
+                    'main_cat' => $fav->main_cat,
+                    'name' => $fav->main_cat == 1 ? $favorite_detail->company->company_name_full_short : $favorite_detail->person_name_second . $favorite_detail->person_name_first,
+                    'tel' => $fav->main_cat == 1 ? $favorite_detail->tel : $favorite_detail->tel1,
                 ];
             });
 
@@ -67,24 +68,24 @@ class FavoriteController extends Controller
                 'fovoriter' => $request->fovoriter,
             ]);
 
-            $favorites = Favorite::where('employeer',$request->employeer)->orderBy('id')->get();
+            $favorites = Favorite::where('employeer', $request->employeer)->orderBy('id')->get();
             $favorite_datas = $favorites->map(function ($fav) {
                 $favorite_detail = null;
-                if($fav->main_cat==1&&$fav->emp_pos==1){
+                if ($fav->main_cat == 1 && $fav->emp_pos == 1) {
                     $favorite_detail = LPCompanyBranch::with('company')->find($fav->fovoriter);
-                }else if($fav->main_cat==1&&$fav->emp_pos==2){
+                } else if ($fav->main_cat == 1 && $fav->emp_pos == 2) {
                     $favorite_detail = CompanyBranch::with('company')->find($fav->fovoriter);
-                }else if($fav->main_cat==2&&$fav->emp_pos==1){
+                } else if ($fav->main_cat == 2 && $fav->emp_pos == 1) {
                     $favorite_detail = LPCompanyEmployee::find($fav->fovoriter);
-                }else{
+                } else {
                     $favorite_detail = CompanyEmployee::find($fav->fovoriter);
                 }
                 return [
-                    'id'=>$favorite_detail->id,
-                    'store_pos'=>$fav->fav_pos,
-                    'main_cat'=>$fav->main_cat,
-                    'name'=>$fav->main_cat==1?$favorite_detail->company->company_name_full_short:$favorite_detail->person_name_second.$favorite_detail->person_name_first,
-                    'tel'=>$fav->main_cat==1?$favorite_detail->tel:$favorite_detail->tel1,
+                    'id' => $favorite_detail->id,
+                    'store_pos' => $fav->fav_pos,
+                    'main_cat' => $fav->main_cat,
+                    'name' => $fav->main_cat == 1 ? $favorite_detail->company->company_name_full_short : $favorite_detail->person_name_second . $favorite_detail->person_name_first,
+                    'tel' => $fav->main_cat == 1 ? $favorite_detail->tel : $favorite_detail->tel1,
                 ];
             });
 
@@ -114,5 +115,16 @@ class FavoriteController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+
+    /**
+     * get all favorite user list.
+     */
+    public function getAllFavoriteUsersBySpecificUser(Request $request)
+    {
+        $userId = $request->userId;
+        $allFavoriteList = LPFavorite::where('user_id', $userId)->get();
+        return response()->json($allFavoriteList);
     }
 }

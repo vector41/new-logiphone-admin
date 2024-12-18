@@ -7,12 +7,6 @@ export default defineConfig({
         host: '127.0.0.1',
         port: 5173
     },
-    server: {
-        hmr: {
-            host: 'localhost',
-            protocol: 'ws',
-        },
-    },
     plugins: [
         laravel({
             input: 'resources/js/app.js',
@@ -27,5 +21,5 @@ export default defineConfig({
             },
         }),
     ],
-    
+
 });

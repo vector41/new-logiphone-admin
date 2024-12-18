@@ -26,10 +26,10 @@ import Toast from 'primevue/toast';
 import ToastService from 'primevue/toastservice';
 import InputSwitch from 'primevue/inputswitch';
 import PanelMenu from 'primevue/panelmenu';
-import RadioButton  from 'primevue/radiobutton';
+import RadioButton from 'primevue/radiobutton';
 import InputText from 'primevue/inputtext';
-import Textarea  from 'primevue/textarea';
-import TabMenu  from 'primevue/tabmenu';
+import Textarea from 'primevue/textarea';
+import TabMenu from 'primevue/tabmenu';
 import SelectButton from 'primevue/selectbutton';
 import ProgressSpinner from 'primevue/progressspinner';
 import Tag from 'primevue/tag';
@@ -53,8 +53,8 @@ createInertiaApp({
             .use(ToastService)
             .use(ConfirmationService)
             .use(Primevue)
-            .use(InputNumber, Checkbox,DataTable,Column,Row,Dropdown,Dialog,ConfirmDialog,InputSwitch,
-                 Toast, Button,PanelMenu,RadioButton,InputText,Textarea,TabMenu,SelectButton,VueDatePicker,ProgressSpinner,Tag, Paginator )
+            .use(InputNumber, Checkbox, DataTable, Column, Row, Dropdown, Dialog, ConfirmDialog, InputSwitch,
+                Toast, Button, PanelMenu, RadioButton, InputText, Textarea, TabMenu, SelectButton, VueDatePicker, ProgressSpinner, Tag, Paginator)
             .component("InputNumber", InputNumber)
             .component("Checkbox", Checkbox)
             .component("DataTable", DataTable)
@@ -75,11 +75,11 @@ createInertiaApp({
             .component("SelectButton", SelectButton)
             .component("Tag", Tag)
             .component("Paginator", Paginator)
-            .component('VueDatePicker', VueDatePicker )
+            .component('VueDatePicker', VueDatePicker)
             .component('Tree', Tree)
             .mount(el);
     },
-    progress:{
+    progress: {
         color: '#4B5563'
     }
 });
