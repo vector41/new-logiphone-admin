@@ -6,6 +6,7 @@ use App\Libs\Common\ApiClass;
 use App\Models\LogiPhone\Favorite;
 use App\Models\LogiPhone\LPCompanyBranch;
 use App\Models\LogiPhone\LPCompanyEmployee;
+use App\Models\LogiPhone\LPEmployee;
 use App\Models\LogiPhone\LPFavorite;
 use App\Models\LogiPhone\LPUser;
 use App\Models\LogiScope\CompanyBranch;
@@ -126,15 +127,20 @@ class FavoriteController extends Controller
     public function getAllFavoriteUsersBySpecificUser(Request $request)
     {
         $result = array();
+<<<<<<< HEAD
         $user_id = $request->user_id;
         $allFavoriteList = LPFavorite::where('user_id', $user_id)->paginate(50);
+=======
+        $userId = $request->user_id;
+        $allFavoriteList = LPFavorite::where('user_id', $userId)->paginate(50);
+>>>>>>> refs/remotes/origin/main
         if (count($allFavoriteList) > 0) {
             foreach ($allFavoriteList as $favorite) {
                 if ($favorite->type == 0) {
-                    $user = CompanyEmployee::find($favorite->selected_id);
+                    $user = CompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')::where('id', $favorite->selected_id);
                     array_push($result, $user);
                 } else {
-                    $user = LPCompanyEmployee::find($favorite->selected_id);
+                    $user = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')::where('id', $favorite->selected_id);
                     array_push($result, $user);
                 }
             }
@@ -145,7 +151,7 @@ class FavoriteController extends Controller
     public function getFavoriteAddList()
     {
         $scopeEmployees = CompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
-        $phoneUsers = LPCompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
+        $phoneUsers = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
 
         return response()->json(["Logiscope" => $scopeEmployees, "LogiPhone" => $phoneUsers]);
     }

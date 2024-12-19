@@ -159,3 +159,11 @@ param:
 */
 
 Route::get('get-logiscope-list', [UserController::class, 'getLogiscopeList']);
+
+/*
+param:
+    {
+        user_id, type
+    }
+*/
+Route::get('get-member-list', [UserController::class, 'getMemberList']);

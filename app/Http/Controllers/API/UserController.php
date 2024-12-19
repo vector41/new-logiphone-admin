@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\LogiPhone\LPCompanyEmployee;
+use App\Models\LogiPhone\LPEmployee;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Hash;
@@ -25,6 +26,13 @@ class UserController extends Controller
             return response()->json(['token' => $token, 'userId' => $authUser->id, 'email' => $authUser->mail], 200);
         } else {
             // Failure
+            $user = LPCompanyEmployee::where('email', $request->email)->first();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                $token = $user->createToken('api-token')->plainTextToken;
+                return response()->json(['token' => $token, 'userId' => $user->id, 'email' => $user->mail], 200);
+            }
+
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
     }
@@ -56,5 +64,21 @@ class UserController extends Controller
     {
         $users = CompanyEmployee::paginate(50);
         return response()->json($users);
+    }
+
+    public function getMemberList(Request $request)
+    {
+        $userId = $request->user_id;
+        $type = $request->type;
+
+        if ($type == 0) {
+            $user = CompanyEmployee::where('id', $userId)->first();
+            $users = CompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', '0')::where('company_id', $user->company_id)->paginate(50);
+            return response()->json($users);
+        } else {
+            $user = LPEmployee::where('id', $userId)->first();
+            $users = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', '1')::where('company_id', $user->company_id)->paginate(50);
+            return response()->json($users);
+        }
     }
 }
