@@ -135,11 +135,11 @@ class FavoriteController extends Controller
                 if ($favorite->type == 0) {
                     $user = CompanyEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
                     if ($user->isNotEmpty())
-                        array_push($result, $user);
+                        array_push($result, $user[0]);
                 } else {
                     $user = LPEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
                     if ($user->isNotEmpty())
-                        array_push($result, $user);
+                        array_push($result, $user[0]);
                 }
             }
             return response()->json($result);
