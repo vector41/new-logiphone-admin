@@ -45,7 +45,9 @@ const toggleExchaned=()=>{
 <template>
     <div class="w-full h-12 flex bg-transparent sticky top-0">
         <div class="flex justify-center items-center bg-gray-100" :style="{width:sideWidth}">
-            <img :style="{maxWidth:maxWidth}" :src="logo_img" />
+            <a href="/">
+                <img :style="{maxWidth:maxWidth}" :src="logo_img" />
+            </a>
         </div>
         <div class="flex justify-start items-center pl-4 gap-3">
             <Button icon="pi pi-bars" @click="toggleExchaned" :pt="{

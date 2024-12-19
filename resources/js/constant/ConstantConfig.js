@@ -261,21 +261,21 @@ export const menu_items = [
         ]
     },
 
-    {
-        label: '通話履歴',
-        icon: 'pi pi-phone',
-        expand: '',
-        items: [
-            {
-                label: '発信/着信',
-                icon: 'pi pi-phone',
-                selected: false,
-                background: 'transparent',
-                color: 'white',
-                component: 'callhistories'
-            }
-        ]
-    },
+    // {
+    //     label: '通話履歴',
+    //     icon: 'pi pi-phone',
+    //     expand: '',
+    //     items: [
+    //         {
+    //             label: '発信/着信',
+    //             icon: 'pi pi-phone',
+    //             selected: false,
+    //             background: 'transparent',
+    //             color: 'white',
+    //             component: 'callhistories'
+    //         }
+    //     ]
+    // },
     {
         label: 'SMS履歴',
         icon: 'pi pi-comments',

@@ -61,7 +61,7 @@ class UserController extends Controller
 
     public function getLogiphoneList(Request $request)
     {
-        $users = LPCompanyEmployee::paginate(50);
+        $users = LPEmployee::paginate(50);
         return response()->json($users);
     }
 
