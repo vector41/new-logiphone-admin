@@ -173,13 +173,6 @@ class FavoriteController extends Controller
      */
     public function getAllFavoriteUsersBySpecificUser(Request $request)
     {
-<<<<<<< HEAD
-        $userId = $request->user_id;
-        $allFavoriteList = LPFavorite::where('user_id', $userId)->paginate(50);
-
-        return response()->json($allFavoriteList);
-=======
-
         $userId = $request->user_id;
         $allFavoriteList = LPFavorite::where('user_id', $userId)->paginate(50);
         return response()->json($allFavoriteList);
@@ -198,7 +191,6 @@ class FavoriteController extends Controller
         //     }
         //     return response()->json($result);
         // }
->>>>>>> 7e8864e982f1102f648575b0965f771147ba066d
     }
 
     public function getFavoriteAddList()

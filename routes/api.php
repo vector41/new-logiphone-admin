@@ -113,11 +113,7 @@ Route::get('/login', [UserController::class, 'login']);
 /*
 param:
     {
-<<<<<<< HEAD
-        user_id
-=======
         user_id, type
->>>>>>> 73665110ea8c92cae0aa2fe140f6d6a2021889c7
     }
 */
 Route::get('/get-favorite-list', [FavoriteController::class, 'getAllFavoriteUsersBySpecificUser']);
