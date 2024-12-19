@@ -6,6 +6,7 @@ use App\Libs\Common\ApiClass;
 use App\Models\LogiPhone\Favorite;
 use App\Models\LogiPhone\LPCompanyBranch;
 use App\Models\LogiPhone\LPCompanyEmployee;
+use App\Models\LogiPhone\LPEmployee;
 use App\Models\LogiPhone\LPFavorite;
 use App\Models\LogiPhone\LPUser;
 use App\Models\LogiScope\CompanyBranch;
@@ -134,7 +135,7 @@ class FavoriteController extends Controller
                     $user = CompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')::where('id', $favorite->selected_id);
                     array_push($result, $user);
                 } else {
-                    $user = LPCompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')::where('id', $favorite->selected_id);
+                    $user = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')::where('id', $favorite->selected_id);
                     array_push($result, $user);
                 }
             }

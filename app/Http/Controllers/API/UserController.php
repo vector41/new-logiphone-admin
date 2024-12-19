@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\LogiPhone\LPCompanyEmployee;
+use App\Models\LogiPhone\LPEmployee;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Hash;
@@ -75,8 +76,8 @@ class UserController extends Controller
             $users = CompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', '0')::where('company_id', $user->company_id)->paginate(50);
             return response()->json($users);
         } else {
-            $user = LPCompanyEmployee::where('id', $userId)->first();
-            $users = LPCompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', '1')::where('company_id', $user->company_id)->paginate(50);
+            $user = LPEmployee::where('id', $userId)->first();
+            $users = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', '1')::where('company_id', $user->company_id)->paginate(50);
             return response()->json($users);
         }
     }
