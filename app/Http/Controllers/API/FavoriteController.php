@@ -122,14 +122,83 @@ class FavoriteController extends Controller
 
 
     /**
+     * add favorite list.
+     */
+
+    public function addFavoriteList(Request $request)
+    {
+        $userId = $request->user_id;
+        $type = $request->type;
+        $selected_id = $request->selected_id;
+
+        if ($type == 0) {
+            $user = CompanyEmployee::where('id', $selected_id)->first();
+            if ($user) {
+                $favorite = new LPFavorite();
+                $favorite->user_id = $userId;
+                $favorite->selected_id = $selected_id;
+                $favorite->type = $type;
+                $favorite->first_name  = $user->person_name_first;
+                $favorite->second_name  = $user->person_name_second;
+                $favorite->first_name_kana = $user->person_name_first_kana;
+                $favorite->second_name_kana = $user->person_name_second_kana;
+                if ($user->gender != null)
+                    $favorite->gender = $user->gender;
+                $favorite->save();
+
+                return response()->json(['message' => 'success'], 200);
+            }
+        } else {
+            $user = LPEmployee::where('id', $selected_id)->first();
+            if ($user) {
+                $favorite = new LPFavorite();
+                $favorite->user_id = $userId;
+                $favorite->type = $type;
+                $favorite->selected_id = $selected_id;
+                $favorite->first_name  = $user->person_name_first;
+                $favorite->second_name  = $user->person_name_second;
+                $favorite->first_name_kana = $user->person_name_first_kana;
+                $favorite->second_name_kana = $user->person_name_second_kana;
+                if ($user->gender != null)
+                    $favorite->gender = $user->gender;
+                $favorite->save();
+
+                return response()->json(['message' => 'success'], 200);
+            }
+        }
+    }
+
+    /**
      * get all favorite user list.
      */
     public function getAllFavoriteUsersBySpecificUser(Request $request)
     {
+<<<<<<< HEAD
         $userId = $request->user_id;
         $allFavoriteList = LPFavorite::where('user_id', $userId)->paginate(50);
 
         return response()->json($allFavoriteList);
+=======
+
+        $userId = $request->user_id;
+        $allFavoriteList = LPFavorite::where('user_id', $userId)->paginate(50);
+        return response()->json($allFavoriteList);
+        // return $allFavoriteList;
+        // if (count($allFavoriteList) > 0) {
+        //     foreach ($allFavoriteList as $favorite) {
+        //         if ($favorite->type == 0) {
+        //             $user = CompanyEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
+        //             if ($user->isNotEmpty())
+        //                 array_push($result, $user[0]);
+        //         } else {
+        //             $user = LPEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
+        //             if ($user->isNotEmpty())
+        //                 array_push($result, $user[0]);
+        //         }
+        //     }
+        //     return response()->json($result);
+        // }
+>>>>>>> 7e8864e982f1102f648575b0965f771147ba066d
     }
 
     public function getFavoriteAddList()

@@ -85,7 +85,7 @@ const hideSubMenu = () =>{
                     <li class="m-item" v-for="(m_item, m_index) in items" :key="m_index">
                         <div class="lg-div px-3 py-2 gap-2" @click="showSubMenu(m_item)">
                             <i :class="[m_item.icon, '!w-10 !text-white']" style="font-size: 1.3rem"></i>
-                            <span class="!text-white">{{ m_item.label }}</span>
+                            <div class="!text-white">{{ m_item.label }}</div>
                         </div>
                         <ul :class="[m_item.expand, 'lg-item-part']">
                             <Link  class="l-item !pl-8" v-for="(s_item, s_index) in m_item.items" :key="s_index"

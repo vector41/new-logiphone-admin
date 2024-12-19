@@ -171,3 +171,12 @@ param:
     }
 */
 Route::get('get-member-list', [UserController::class, 'getMemberList']);
+
+/*
+param:
+    {
+        user_id, type, selected_id
+    }
+*/
+
+Route::get('add-favorite-list', [FavoriteController::class, 'addFavoriteList']);
