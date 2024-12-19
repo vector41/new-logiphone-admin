@@ -146,7 +146,7 @@ class FavoriteController extends Controller
     public function getFavoriteAddList()
     {
         $scopeEmployees = CompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
-        $phoneUsers = LPCompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
+        $phoneUsers = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
 
         return response()->json(["Logiscope" => $scopeEmployees, "LogiPhone" => $phoneUsers]);
     }
