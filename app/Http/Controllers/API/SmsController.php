@@ -226,4 +226,13 @@ class SmsController extends Controller
             return $res;
         }
     }
+
+    public function getSMSList(Request $request)
+    {
+        $id = $request->id;
+
+        $smsList = LPSms::where('sender_id', $id)->orWhere('receiver_id', $id)->get();
+
+        return response()->json($smsList);
+    }
 }

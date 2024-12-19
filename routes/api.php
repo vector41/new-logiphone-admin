@@ -133,3 +133,29 @@ param:
     }
 */
 Route::get('get-sms-list', [SmsController::class, 'getSMSList']);
+
+/*
+param:
+    {
+        user_id,type
+    }
+*/
+
+Route::get('get-profile', [UserController::class, 'getProfile']);
+
+/*
+param:
+    {
+        no param
+    }
+*/
+Route::get('get-logiphone-list', [UserController::class, 'getLogiphoneList']);
+
+/*
+param:
+    {
+        no param
+    }
+*/
+
+Route::get('get-logiscope-list', [UserController::class, 'getLogiscopeList']);
