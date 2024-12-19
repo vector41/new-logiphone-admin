@@ -102,5 +102,34 @@ Route::get('/getSpecificUser?keyword={keyword}', [EmployeeController::class, 'ge
 
 
 // Android Apis
+/*
+param:
+    {
+        email,password
+    }
+*/
 Route::get('/login', [UserController::class, 'login']);
+
+/*
+param:
+    {
+        userId
+    }
+*/
 Route::get('/get-favorite-list', [FavoriteController::class, 'getAllFavoriteUsersBySpecificUser']);
+
+/*
+param:
+    {
+        no param
+    }
+*/
+Route::get('get-favorite-add-list', [FavoriteController::class, 'getFavoriteAddList']);
+
+/*
+param:
+    {
+        id,email,type
+    }
+*/
+Route::get('get-sms-list', [SmsController::class, 'getSMSList']);

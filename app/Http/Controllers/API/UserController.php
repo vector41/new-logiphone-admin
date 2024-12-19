@@ -19,7 +19,7 @@ class UserController extends Controller
             // Success
             $authUser = auth()->user();
             $token = $authUser->createToken($request->email)->plainTextToken;
-            return response()->json(['token' => $token], 200);
+            return response()->json(['token' => $token, 'userId' => $authUser->id, 'email' => $authUser->mail], 200);
         } else {
             // Failure
             return response()->json(['message' => 'Invalid credentials'], 401);
