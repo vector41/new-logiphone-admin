@@ -126,8 +126,8 @@ class FavoriteController extends Controller
     public function getAllFavoriteUsersBySpecificUser(Request $request)
     {
         $result = array();
-        $userId = $request->userId;
-        $allFavoriteList = LPFavorite::where('user_id', $userId)->paginate(50);
+        $user_id = $request->user_id;
+        $allFavoriteList = LPFavorite::where('user_id', $user_id)->paginate(50);
         if (count($allFavoriteList) > 0) {
             foreach ($allFavoriteList as $favorite) {
                 if ($favorite->type == 0) {

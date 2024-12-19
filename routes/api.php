@@ -113,7 +113,7 @@ Route::get('/login', [UserController::class, 'login']);
 /*
 param:
     {
-        userId
+        user_id
     }
 */
 Route::get('/get-favorite-list', [FavoriteController::class, 'getAllFavoriteUsersBySpecificUser']);
