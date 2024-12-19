@@ -126,24 +126,10 @@ class FavoriteController extends Controller
      */
     public function getAllFavoriteUsersBySpecificUser(Request $request)
     {
-        $result = array();
         $userId = $request->user_id;
         $allFavoriteList = LPFavorite::where('user_id', $userId)->paginate(50);
-        // return $allFavoriteList;
-        if (count($allFavoriteList) > 0) {
-            foreach ($allFavoriteList as $favorite) {
-                if ($favorite->type == 0) {
-                    $user = CompanyEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
-                    if ($user->isNotEmpty())
-                        array_push($result, $user);
-                } else {
-                    $user = LPEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
-                    if ($user->isNotEmpty())
-                        array_push($result, $user);
-                }
-            }
-            return response()->json($result);
-        }
+
+        return response()->json($allFavoriteList);
     }
 
     public function getFavoriteAddList()
