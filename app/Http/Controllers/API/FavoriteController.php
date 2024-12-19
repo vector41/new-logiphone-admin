@@ -201,4 +201,15 @@ class FavoriteController extends Controller
 
         return response()->json(["Logiscope" => $scopeEmployees, "LogiPhone" => $phoneUsers]);
     }
+
+    public function searchFavoriteList(Request $request)
+    {
+        $keyword = $request->keyword;
+
+        $result = LPFavorite::where("first_name", "like", "%" . $keyword . "%")
+            ->orWhere("second_name", "like", "%" . $keyword . "%")
+            ->paginate(50);
+
+        return response()->json($result);
+    }
 }

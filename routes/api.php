@@ -176,3 +176,12 @@ param:
 */
 
 Route::get('add-favorite-list', [FavoriteController::class, 'addFavoriteList']);
+
+/*
+param:
+    {
+        keyword
+    }
+*/
+
+Route::get('search_favorite_list', [FavoriteController::class, 'searchFavoriteList']);
