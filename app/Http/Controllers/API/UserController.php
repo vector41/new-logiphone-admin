@@ -86,4 +86,65 @@ class UserController extends Controller
             return response()->json($users);
         }
     }
+
+    // search methond
+    public function searchLogiphoneList(Request $request)
+    {
+        $keyword = $request->keyword;
+        $result = LPEmployee::where('person_name_first', "like", "%" . $keyword . "%")
+            ->orWhere('person_name_second', "like", "%" . $keyword . "%")
+            ->paginate(50);
+
+        return response()->json($result);
+    }
+
+    public function searchLogiscopeList(Request $request)
+    {
+        $keyword = $request->keyword;
+        $result = CompanyEmployee::where('person_name_first', "like", "%" . $keyword . "%")
+            ->orWhere('person_name_second', "like", "%" . $keyword . "%")
+            ->paginate(50);
+
+        return response()->json($result);
+    }
+
+    public function addEmployee(Request $request)
+    {
+        $person_name_first = $request->person_name_first;
+        $person_name_second = $request->person_name_second;
+        $person_name_first_kana = $request->person_name_first_kana;
+        $person_name_second_kana = $request->person_name_second_kana;
+        $nickname = $request->nickname;
+        $email = $request->email;
+        $password = Hash::make($request->password);
+        $position = $request->role;
+        $birth_date = $request->birth_date;
+        $gender = $request->gender;
+        $address = $request->address;
+        $blood = $request->blood;
+        $zip = $request->zip;
+        $companyId = $request->company_id;
+        $departmentId = $request->department_id;
+
+
+        $employee = new LPEmployee();
+        $employee->person_name_first = $person_name_first;
+        $employee->person_name_second = $person_name_second;
+        $employee->person_name_first_kana = $person_name_first_kana;
+        $employee->person_name_second_kana = $person_name_second_kana;
+        $employee->nickname = $nickname;
+        $employee->email = $email;
+        $employee->password = $password;
+        $employee->blood = $blood;
+        $employee->position = $position;
+        $employee->birth_date = $birth_date;
+        $employee->gender = $gender;
+        $employee->address = $address;
+        $employee->zip = $zip;
+        $employee->companyId = $companyId;
+        $employee->department_id = $departmentId;
+        $employee->save();
+
+        return response()->json(['message' => 'success'], 200);
+    }
 }

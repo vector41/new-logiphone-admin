@@ -180,8 +180,44 @@ Route::get('add-favorite-list', [FavoriteController::class, 'addFavoriteList']);
 /*
 param:
     {
-        keyword
+        keyword(search-favorite-list), user_id
     }
 */
 
-Route::get('search_favorite_list', [FavoriteController::class, 'searchFavoriteList']);
+Route::get('search-favorite-list', [FavoriteController::class, 'searchFavoriteList']);
+
+/*
+param:
+    {
+        keyword(search-favorite-add-list), user_id
+    }
+*/
+
+Route::get('search-favorite-add-list', [FavoriteController::class, 'searchFavoriteAddList']);
+
+/*
+param:
+    {
+        keyword(search-logiphone-list)
+    }
+*/
+
+Route::get('search-logiphone-list', [UserController::class, 'searchLogiphoneList']);
+
+/*
+param:
+    {
+        keyword(search-logiscope-list)
+    }
+*/
+
+Route::get('search-logiscope-list', [UserController::class, 'searchLogiscopeList']);
+
+/*
+param:
+    {
+        (add-employee)
+    }
+*/
+
+Route::get('add-employee', [UserController::class, 'addEmployee']);

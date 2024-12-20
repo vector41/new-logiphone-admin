@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\DB;
 
 class FavoriteController extends Controller
 {
@@ -177,39 +178,90 @@ class FavoriteController extends Controller
         $userId = $request->user_id;
         $allFavoriteList = LPFavorite::where('user_id', $userId)->paginate(50);
         return response()->json($allFavoriteList);
-        // return $allFavoriteList;
-        // if (count($allFavoriteList) > 0) {
-        //     foreach ($allFavoriteList as $favorite) {
-        //         if ($favorite->type == 0) {
-        //             $user = CompanyEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
-        //             if ($user->isNotEmpty())
-        //                 array_push($result, $user[0]);
-        //         } else {
-        //             $user = LPEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
-        //             if ($user->isNotEmpty())
-        //                 array_push($result, $user[0]);
-        //         }
-        //     }
-        //     return response()->json($result);
-        // }
     }
 
     public function getFavoriteAddList()
     {
-        $scopeEmployees = CompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
-        $phoneUsers = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
 
-        return response()->json(["Logiscope" => $scopeEmployees, "LogiPhone" => $phoneUsers]);
+        $page = request()->get('page', 1);
+        $pageSize = 50; // Records per page
+
+        $logiphoneEmployees = DB::connection('mysql_lp')->table('employees')
+            ->select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender', DB::raw("'Logiphone' as source"));
+
+        $logiscopeEmployees = DB::table('company_employees')
+            ->select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender', DB::raw("'Logiscope' as source"));
+
+        $employees = $logiphoneEmployees
+            ->unionAll($logiscopeEmployees)
+            ->orderBy('person_name_first')
+            ->offset(($page - 1) * $pageSize)
+            ->limit($pageSize)
+            ->get();
+
+        return response()->json($employees);
+
+        // $scopeEmployees = CompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
+        // $phoneUsers = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
+
+        // return response()->json(["Logiscope" => $scopeEmployees, "LogiPhone" => $phoneUsers]);
+
     }
 
     public function searchFavoriteList(Request $request)
     {
         $keyword = $request->keyword;
-
+        $userId = $request->user_id;
         $result = LPFavorite::where("first_name", "like", "%" . $keyword . "%")
             ->orWhere("second_name", "like", "%" . $keyword . "%")
+            ->orWhere("user_id", "=", $userId)
             ->paginate(50);
 
         return response()->json($result);
+    }
+
+    public function searchFavoriteAddList(Request $request)
+    {
+        $keyword = $request->keyword;
+        $results = DB::table('Logiphone.favorites AS f')
+            ->leftJoin('Logiphone.employees AS e', function ($join) {
+                $join->on('f.type', '=', DB::raw(1))
+                    ->on('f.foreign_key', '=', 'e.id');
+            })
+            ->leftJoin('Logiscope.company_employees AS ce', function ($join) {
+                $join->on('f.type', '=', DB::raw(0))
+                    ->on('f.foreign_key', '=', 'ce.id');
+            })
+            ->select(
+                'f.id AS favorite_id',
+                'f.type',
+                DB::raw("
+            CASE
+                WHEN f.type = 1 THEN e.person_name_first
+                WHEN f.type = 0 THEN ce.person_name_first
+                ELSE NULL
+            END AS name
+        "),
+                DB::raw("
+            CASE
+                WHEN f.type = 1 THEN e.person_name_second
+                WHEN f.type = 0 THEN ce.person_name_second
+                ELSE NULL
+            END AS email
+        ")
+            )
+            ->where(function ($query) use ($keyword) {
+                $query->where(function ($subQuery) use ($keyword) {
+                    $subQuery->where('f.type', '=', 1)
+                        ->where('e.name', 'LIKE', "%{$keyword}%");
+                })
+                    ->orWhere(function ($subQuery) use ($keyword) {
+                        $subQuery->where('f.type', '=', 0)
+                            ->where('ce.name', 'LIKE', "%{$keyword}%");
+                    });
+            })
+            ->paginate(50);
+
+        return response()->json($results);
     }
 }
