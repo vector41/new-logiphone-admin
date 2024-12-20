@@ -173,9 +173,16 @@ class FavoriteController extends Controller
      */
     public function getAllFavoriteUsersBySpecificUser(Request $request)
     {
+        $keyword = $request->keyword;
         $userId = $request->user_id;
-        $allFavoriteList = LPFavorite::where('user_id', $userId)->paginate(50);
-        return response()->json($allFavoriteList);
+        $result = LPFavorite::where('user_id', $userId)
+                            ->where(function ($query) use ($keyword) {
+                                $query->where('second_name', 'like', '%' . $keyword . '%')
+                                      ->orWhere('first_name', 'like', '%' . $keyword . '%');
+                            })
+                            ->paginate(50);
+
+        return response()->json($result);
         // return $allFavoriteList;
         // if (count($allFavoriteList) > 0) {
         //     foreach ($allFavoriteList as $favorite) {
@@ -199,5 +206,19 @@ class FavoriteController extends Controller
         $phoneUsers = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
 
         return response()->json(["Logiscope" => $scopeEmployees, "LogiPhone" => $phoneUsers]);
+    }
+
+    public function searchFavoriteList(Request $request)
+    {
+        $keyword = $request->keyword;
+        $userId = $request->user_id;
+        $result = LPFavorite::where('user_id', $userId)
+                            ->where(function ($query) use ($keyword) {
+                                $query->where('second_name', 'like', '%' . $keyword . '%')
+                                      ->orWhere('first_name', 'like', '%' . $keyword . '%');
+                            })
+                            ->paginate(50);
+
+        return response()->json($result);
     }
 }

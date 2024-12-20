@@ -20,7 +20,7 @@ class UserController extends Controller
     public function login(Request $request)
     {
         if ($request->email = "nori@komaeda.com" && $request->password = "test") {
-            // $email = $request->mail;
+            $email = $request->mail;
             // return $request->mail;
             return response()->json(['token' => "dfdfddieu2929299292", 'userId' => 34, 'email' => "nori@komaeda.com"], 200);
         }
