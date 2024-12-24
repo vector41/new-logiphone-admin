@@ -8,6 +8,7 @@ use App\Http\Controllers\API\SupplierController;
 use App\Http\Controllers\API\CallController;
 use App\Http\Controllers\API\SmsController;
 use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\CompanyController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Models\LogiPhone\Favorite;
 use Illuminate\Http\Request;
@@ -124,7 +125,7 @@ param:
         no param
     }
 */
-Route::get('get-favorite-add-list', [FavoriteController::class, 'getFavoriteAddList']);
+Route::get('/get-favorite-add-list', [FavoriteController::class, 'getFavoriteAddList']);
 
 /*
 param:
@@ -132,7 +133,7 @@ param:
         id,email,type
     }
 */
-Route::get('get-sms-list', [SmsController::class, 'getSMSList']);
+Route::get('/get-sms-list', [SmsController::class, 'getSMSList']);
 
 /*
 param:
@@ -141,7 +142,7 @@ param:
     }
 */
 
-Route::get('get-profile', [UserController::class, 'getProfile']);
+Route::get('/get-profile', [UserController::class, 'getProfile']);
 
 /*
 param:
@@ -149,7 +150,7 @@ param:
         no param
     }
 */
-Route::get('get-logiphone-list', [UserController::class, 'getLogiphoneList']);
+Route::get('/get-logiphone-list', [UserController::class, 'getLogiphoneList']);
 
 /*
 param:
@@ -158,7 +159,7 @@ param:
     }
 */
 
-Route::get('get-logiscope-list', [UserController::class, 'getLogiscopeList']);
+Route::get('/get-logiscope-list', [UserController::class, 'getLogiscopeList']);
 
 /*
 param:
@@ -166,7 +167,7 @@ param:
         user_id, type
     }
 */
-Route::get('get-member-list', [UserController::class, 'getMemberList']);
+Route::get('/get-member-list', [UserController::class, 'getMemberList']);
 
 /*
 param:
@@ -175,13 +176,85 @@ param:
     }
 */
 
-Route::get('add-favorite-list', [FavoriteController::class, 'addFavoriteList']);
+Route::get('/add-favorite-list', [FavoriteController::class, 'addFavoriteList']);
 
 /*
 param:
     {
-        keyword
+        keyword(search-favorite-list), user_id
     }
 */
 
-Route::get('search-favorite-list', [FavoriteController::class, 'searchFavoriteList']);
+Route::get('/search-favorite-list', [FavoriteController::class, 'searchFavoriteList']);
+
+/*
+param:
+    {
+        keyword(search-favorite-add-list), user_id
+    }
+*/
+
+Route::get('/search-favorite-add-list', [FavoriteController::class, 'searchFavoriteAddList']);
+
+/*
+param:
+    {
+        keyword(search-logiphone-list)
+    }
+*/
+
+Route::get('/search-logiphone-list', [UserController::class, 'searchLogiphoneList']);
+
+/*
+param:
+    {
+        keyword(search-logiscope-list)
+    }
+*/
+
+Route::get('/search-logiscope-list', [UserController::class, 'searchLogiscopeList']);
+
+/*
+param:
+    {
+        (add-employee)
+    }
+*/
+
+Route::post('/add-employee', [UserController::class, 'addEmployee']);
+
+/*
+param:
+    {
+        (update-user)
+    }
+*/
+
+Route::post('/update-user', [UserController::class, 'updateUser']);
+
+/*
+param:
+    {
+        user_id,selected_id, type(change-favorite-list)
+    }
+*/
+
+Route::get('/change-favorite-list', [FavoriteController::class, 'changeFavoriteList']);
+
+/*
+param:
+    {
+        (get-all-companies) no param
+    }
+*/
+
+Route::get('/get-all-companies', [CompanyController::class, 'getAllCompanies']);
+
+/*
+param:
+    {
+        (sender_id, receiver_id, user_type, content) no param
+    }
+*/
+
+Route::get('/send-sms', [SmsController::class, 'sendSMS']);

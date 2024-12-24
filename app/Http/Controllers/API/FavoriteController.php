@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\DB;
 
 class FavoriteController extends Controller
 {
@@ -180,45 +181,145 @@ class FavoriteController extends Controller
                                 $query->where('second_name', 'like', '%' . $keyword . '%')
                                       ->orWhere('first_name', 'like', '%' . $keyword . '%');
                             })
-                            ->paginate(50);
-
+                            ->paginate(30);
+        
         return response()->json($result);
-        // return $allFavoriteList;
-        // if (count($allFavoriteList) > 0) {
-        //     foreach ($allFavoriteList as $favorite) {
-        //         if ($favorite->type == 0) {
-        //             $user = CompanyEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
-        //             if ($user->isNotEmpty())
-        //                 array_push($result, $user[0]);
-        //         } else {
-        //             $user = LPEmployee::where('id', $favorite->selected_id)->get(['id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender']);
-        //             if ($user->isNotEmpty())
-        //                 array_push($result, $user[0]);
-        //         }
-        //     }
-        //     return response()->json($result);
-        // }
     }
 
-    public function getFavoriteAddList()
+    /**
+     * get all favorite user list.
+     */
+    public function changeFavoriteList(Request $request)
     {
-        $scopeEmployees = CompanyEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
-        $phoneUsers = LPEmployee::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender')->orderBy('person_name_first')->paginate(25);
+        $userId = $request->user_id;
+        $selected_id = $request->selected_id;
+        $type = $request->type;
 
-        return response()->json(["Logiscope" => $scopeEmployees, "LogiPhone" => $phoneUsers]);
+        $status = LPFavorite::where('user_id', $userId)
+                            ->where('selected_id', $selected_id)
+                            ->get();
+
+        $favorite = new LPFavorite();
+        if ($status->isEmpty()) {
+            if ($type == 0) {
+                $user = CompanyEmployee::where('id', $selected_id)->first();
+                $favorite->user_id = $userId;
+                $favorite->selected_id = $selected_id;
+                $favorite->type = $type;
+                $favorite->first_name  = $user->person_name_first;
+                $favorite->second_name  = $user->person_name_second;
+                $favorite->first_name_kana = $user->person_name_first_kana;
+                $favorite->second_name_kana = $user->person_name_second_kana;
+                $favorite->gender = $user->gender != null ? $user->gender : 1;
+                $favorite->save();
+            } else {
+                $user = LPEmployee::where('id', $selected_id)->first();
+                $favorite->user_id = $userId;
+                $favorite->selected_id = $selected_id;
+                $favorite->type = $type;
+                $favorite->first_name  = $user->person_name_first;
+                $favorite->second_name  = $user->person_name_second;
+                $favorite->first_name_kana = $user->person_name_first_kana;
+                $favorite->second_name_kana = $user->person_name_second_kana;
+                $favorite->gender = $user->gender != null ? $user->gender : 1;
+                $favorite->save();
+            }
+            return response()->json(['message' => 'inserted'], 200);
+        } else {
+            LPFavorite::where('user_id', $userId)
+                      ->where('selected_id', $selected_id)
+                      ->delete();
+            return response()->json(['message' => 'deleted'], 200);
+        }
+    }
+
+    public function getFavoriteAddList(Request $request)
+    {
+        $keyword = $request->keyword;
+        $logiphoneEmployees = DB::connection('mysql_lp')
+                                ->table('employees')
+                                ->select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender', DB::raw("'logiphone' as source"))
+                                ->where('person_name_second', 'like', "%{$keyword}%")
+                                ->orWhere('person_name_first', 'like', "%{$keyword}%")
+                                ->orWhere('person_name_second_kana', 'like', "%{$keyword}%")
+                                ->orWhere('person_name_first_kana', 'like', "%{$keyword}%")
+                                ->orWhere('nickname', 'like', "%{$keyword}%");
+
+        $logiscopeEmployees = DB::connection('mysql')
+                                ->table('company_employees')
+                                ->select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender', DB::raw("'logiscope' as source"))
+                                ->where('person_name_second', 'like', "%{$keyword}%")
+                                ->orWhere('person_name_first', 'like', "%{$keyword}%")
+                                ->orWhere('person_name_second_kana', 'like', "%{$keyword}%")
+                                ->orWhere('person_name_first_kana', 'like', "%{$keyword}%")
+                                ->orWhere('nickname', 'like', "%{$keyword}%");
+
+        $unionQuery = $logiphoneEmployees->unionAll($logiscopeEmployees);
+        $paginatedEmployees = $unionQuery->paginate(20);
+
+        $paginatedEmployees->getCollection()->transform(function ($user) {
+            $user->gender = $user->gender == "null" ? 1 : $user->gender;
+            $user->type = $user->source == "logiphone" ? 1 : 0;
+            return $user;
+        });
+
+        return response()->json($paginatedEmployees);
     }
 
     public function searchFavoriteList(Request $request)
     {
         $keyword = $request->keyword;
         $userId = $request->user_id;
-        $result = LPFavorite::where('user_id', $userId)
-                            ->where(function ($query) use ($keyword) {
-                                $query->where('second_name', 'like', '%' . $keyword . '%')
-                                      ->orWhere('first_name', 'like', '%' . $keyword . '%');
-                            })
-                            ->paginate(50);
+        $result = LPFavorite::where("first_name", "like", "%" . $keyword . "%")
+                            ->orWhere("second_name", "like", "%" . $keyword . "%")
+                            ->orWhere("user_id", "=", $userId)
+                            ->paginate(30);
 
         return response()->json($result);
+    }
+
+    public function searchFavoriteAddList(Request $request)
+    {
+        $keyword = $request->keyword;
+        $results = DB::table('Logiphone.favorites AS f')
+                    ->leftJoin('Logiphone.employees AS e', function ($join) {
+                        $join->on('f.type', '=', DB::raw(1))
+                             ->on('f.foreign_key', '=', 'e.id');
+                    })
+                    ->leftJoin('Logiscope.company_employees AS ce', function ($join) {
+                        $join->on('f.type', '=', DB::raw(0))
+                             ->on('f.foreign_key', '=', 'ce.id');
+                    })
+                    ->select(
+                        'f.id AS favorite_id',
+                        'f.type',
+                        DB::raw("
+                            CASE
+                                WHEN f.type = 1 THEN e.person_name_first
+                                WHEN f.type = 0 THEN ce.person_name_first
+                                ELSE NULL
+                            END AS name
+                        "),
+                        DB::raw("
+                            CASE
+                                WHEN f.type = 1 THEN e.person_name_second
+                                WHEN f.type = 0 THEN ce.person_name_second
+                                ELSE NULL
+                            END AS email
+                        ")
+                    )
+                    ->where(function ($query) use ($keyword) {
+                        $query->where(function ($subQuery) use ($keyword) {
+                            $subQuery->where('f.type', '=', 1)
+                                    ->where('e.name', 'LIKE', "%{$keyword}%");
+                        })
+                        ->orWhere(function ($subQuery) use ($keyword) {
+                            $subQuery->where('f.type', '=', 0)
+                                    ->where('ce.name', 'LIKE', "%{$keyword}%");
+                        });
+                    })
+                    ->paginate(30);
+
+        return response()->json($results);
     }
 }

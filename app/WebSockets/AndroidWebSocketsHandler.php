@@ -91,12 +91,12 @@ class AndroidWebSocketsHandler implements MessageComponentInterface
             $data = $payload->data;
 
             $detail = CompanyEmployee::select('companies.company_name', 
-                                                'company_employees.id', 
-                                                'company_employees.person_name_second', 
-                                                'company_employees.person_name_first', 
-                                                'company_employees.tel1', 
-                                                'company_employees.tel2', 
-                                                'company_employees.tel3')
+                                              'company_employees.id', 
+                                              'company_employees.person_name_second', 
+                                              'company_employees.person_name_first', 
+                                              'company_employees.tel1', 
+                                              'company_employees.tel2', 
+                                              'company_employees.tel3')
                                     ->leftJoin('companies', 'company_employees.company_id', '=', 'companies.id')
                                     ->where(DB::raw("REGEXP_REPLACE(tel1, '[^0-9]', '')"), '=', $data)
                                     ->orWhere(DB::raw("REGEXP_REPLACE(tel2, '[^0-9]', '')"), '=', $data)

@@ -15,7 +15,6 @@ use stdClass;
 */
 class CompanyController extends Controller
 {
-
     /**
      * 会社の情報の取得
      * @return void
@@ -24,28 +23,25 @@ class CompanyController extends Controller
     {
         // $user = Auth::user();
 
-        // if ($user->company->company_base_id){
+        // if ($user->company->company_base_id) {
         //     $Companies = Company::whereCompanyBaseId($user->company->company_base_id)->get();
-        // }else{
+        // } else {
         //     $Companies[] = $user->company;
         // }
         $Companies = Company::whereCompanyBaseId(1)->get();
 
-        foreach ($Companies as $key => $Company){
-            if (!$Companies[$key]->is_company_branch){
+        foreach ($Companies as $key => $Company) {
+            if (!$Companies[$key]->is_company_branch) {
                 //営業所がない場合は本社の住所を入れる
                 $Companies[$key]->setMainOfficeInfo();
             }
 
-            $Companies[$key]->children = CompanyBranch::
-                with(["children.children"])
-                ->where("company_id", $Companies[$key]->id)
-                ->get();
+            $Companies[$key]->children = CompanyBranch::with(["children.children"])
+                                                      ->where("company_id", $Companies[$key]->id)
+                                                      ->get();
         }
 
-        return $ApiClass->responseOk([
-            "response" => $Companies
-                                     ]);
+        return $ApiClass->responseOk(["response" => $Companies]);
     }
 
     /**
@@ -82,17 +78,20 @@ class CompanyController extends Controller
             ];
         });
 
-        return $ApiClass->responseOk([
-                                         "response" => $response
-                                     ]);
+        return $ApiClass->responseOk(["response" => $response]);
     }
 
-    function getRolesFromEmployeeRole($employeerRoles){
+    function getRolesFromEmployeeRole($employeerRoles) {
         $roles = [];
-        foreach($employeerRoles as $role){
+        foreach ($employeerRoles as $role) {
             array_push($roles, $role->role);
         }
         return $roles;
     }
 
+    public function getAllCompanies()
+    {
+        $result = Company::select('id', 'company_name')->paginate(20);
+        return response()->json($result);
+    }
 }

@@ -230,9 +230,37 @@ class SmsController extends Controller
     public function getSMSList(Request $request)
     {
         $id = $request->id;
-
-        $smsList = LPSms::where('sender_id', $id)->orWhere('receiver_id', $id)->get();
+        $smsList = LPSms::where('sender_id', $id)
+                        ->orWhere('receiver_id', $id)
+                        ->get();
 
         return response()->json($smsList);
+    }
+
+    public function sendSMS(Request $request)
+    {
+        $request->validate([
+            "sender_id" => "required",
+            "receiver_id" => "required",
+            "user_type" => "required"
+        ]);
+
+        $senderId = $request->sender_id;
+        $receiveId = $request->receive_id;
+
+        $userType = $request->user_type;
+        $content = $request->content;
+
+        $newSMS = new LPSms();
+        $newSMS->sender_id = $senderId;
+        $newSMS->receiver_id = $receiveId;
+        $newSMS->user_type = $userType;
+        if ($content != "")
+            $newSMS->content = $content;
+        else $newSMS->content = "";
+
+        $newSMS->save();
+
+        return response()->json(["message" => "success", 200]);
     }
 }
