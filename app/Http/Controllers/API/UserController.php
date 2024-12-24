@@ -240,7 +240,6 @@ class UserController extends Controller
 
     public function updateUser(Request $request)
     {
-        return response()->json(['message' => $request->all()], 200);
         $userId = $request->user_id;
         $type = $request->type;
 

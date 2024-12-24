@@ -107,7 +107,7 @@ class AndroidWebSocketsHandler implements MessageComponentInterface
 
             $connection->send(json_encode([
                 'event' => 'GOT_USER_DETAIL',
-                'data'  => $detail,
+                'data'  => $payload,
             ]));
         }
 

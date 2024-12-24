@@ -130,38 +130,40 @@ class FavoriteController extends Controller
     {
         $userId = $request->user_id;
         $type = $request->type;
-        $selected_id = $request->selected_id;
+        $selectedId = $request->selected_id;
 
         if ($type == 0) {
-            $user = CompanyEmployee::where('id', $selected_id)->first();
+            $user = CompanyEmployee::where('id', $selectedId)->first();
             if ($user) {
                 $favorite = new LPFavorite();
+
                 $favorite->user_id = $userId;
-                $favorite->selected_id = $selected_id;
+                $favorite->selected_id = $selectedId;
                 $favorite->type = $type;
-                $favorite->first_name  = $user->person_name_first;
-                $favorite->second_name  = $user->person_name_second;
+                $favorite->first_name = $user->person_name_first;
+                $favorite->second_name = $user->person_name_second;
                 $favorite->first_name_kana = $user->person_name_first_kana;
                 $favorite->second_name_kana = $user->person_name_second_kana;
-                if ($user->gender != null)
-                    $favorite->gender = $user->gender;
+                $favorite->gender = $user->gender;
+
                 $favorite->save();
 
                 return response()->json(['message' => 'success'], 200);
             }
         } else {
-            $user = LPEmployee::where('id', $selected_id)->first();
+            $user = LPEmployee::where('id', $selectedId)->first();
             if ($user) {
                 $favorite = new LPFavorite();
+
                 $favorite->user_id = $userId;
                 $favorite->type = $type;
-                $favorite->selected_id = $selected_id;
-                $favorite->first_name  = $user->person_name_first;
-                $favorite->second_name  = $user->person_name_second;
+                $favorite->selected_id = $selectedId;
+                $favorite->first_name = $user->person_name_first;
+                $favorite->second_name = $user->person_name_second;
                 $favorite->first_name_kana = $user->person_name_first_kana;
                 $favorite->second_name_kana = $user->person_name_second_kana;
-                if ($user->gender != null)
-                    $favorite->gender = $user->gender;
+                $favorite->gender = $user->gender;
+
                 $favorite->save();
 
                 return response()->json(['message' => 'success'], 200);
