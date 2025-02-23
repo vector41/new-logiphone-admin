@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Dashboard');
     });
     Route::get('/companys', function () {
+
         return Inertia::render('CompanyContent');
     })->name('companies');
     Route::get('/company-regist', function () {
@@ -79,17 +80,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/company-employees', function () {
         return Inertia::render('CompanyEmployeerContent');
     })->name('members');
-    Route::get('/phoneBook-setting', function () {
-        return Inertia::render('PhoneBookContent');
+    Route::get('/phoneBookContent', function () {
+        return Inertia::render(component: 'PhoneBookContent');
     })->name('phoneBook');
+    Route::get('/phoneBookContentSetting', function () {
+        return Inertia::render(component: 'PhoneBookContentSetting');
+    })->name('phoneBookContentSetting');
+
 });
 
 
 
-
 // Controller function connection.
-
-
 // No need ?
 
 // Route::get('/users', [AdminController::class, 'getAllUsers']);
@@ -111,9 +113,12 @@ Route::post('/suppliers/branch/save', [SupplierController::class, 'saveCompanyBr
 Route::post('/suppliers/company/savelp', [SupplierController::class, 'saveLP']);
 
 Route::get('/suppliers/employees/all', [EmployeeController::class, 'list']);
+// Route::get('/suppliers/employees/oldAll', [EmployeeController::class,'getAllUsersByPageInOldPeople']);
 Route::get('/suppliers/employees/get', [EmployeeController::class, 'get']);
 Route::post('/suppliers/employees/save', [EmployeeController::class, 'save']);
 Route::post('/suppliers/employees/remove', [EmployeeController::class, 'destroy']);
+
+Route::get('/suppliers/employees/getPhoneBookContent',[EmployeeController::class,'getUserList']);
 
 Route::post('/suppliers/employees/save_lp', [EmployeeController::class, 'saveLP']);
 Route::get('/suppliers/employees/get_from_branch', [EmployeeController::class, 'getEmployeeFromBranch']);

@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Models\LogiPhone;
+namespace App\Models\LogiScopeOld;
+
 use App\Libs\Common\ModelClass;
 use App\Models\Authority\Authority;
 use App\Models\Cars\Car;
@@ -17,13 +18,10 @@ use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 
-class LPEmployee extends Model
-{
-    protected $connection = 'mysql_lp';
-    protected $table = 'employees';
+class Staff extends Model {
+
+    protected $connection = "mysql_old";
+
+    protected $table = 'staff';
     protected $primaryKey = 'id';
-
-    protected $fillable = [
-
-    ];
 }

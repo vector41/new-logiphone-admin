@@ -11,6 +11,7 @@ use App\Models\LogiPhone\LPFavorite;
 use App\Models\LogiPhone\LPUser;
 use App\Models\LogiScope\CompanyBranch;
 use App\Models\LogiScope\CompanyEmployee;
+use App\Models\LogiScopeOld\Staff;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -144,6 +145,9 @@ class FavoriteController extends Controller
                 $favorite->second_name = $user->person_name_second;
                 $favorite->first_name_kana = $user->person_name_first_kana;
                 $favorite->second_name_kana = $user->person_name_second_kana;
+                $favorite->tel1 = $user->tel1;
+                $favorite->tel2 = $user->tel2;
+                $favorite->tel3 = $user->tel3;
                 $favorite->gender = $user->gender;
 
                 $favorite->save();
@@ -162,6 +166,9 @@ class FavoriteController extends Controller
                 $favorite->second_name = $user->person_name_second;
                 $favorite->first_name_kana = $user->person_name_first_kana;
                 $favorite->second_name_kana = $user->person_name_second_kana;
+                $favorite->tel1 = $user->tel1;
+                $favorite->tel2 = $user->tel2;
+                $favorite->tel3 = $user->tel3;
                 $favorite->gender = $user->gender;
 
                 $favorite->save();
@@ -212,10 +219,13 @@ class FavoriteController extends Controller
                 $favorite->second_name  = $user->person_name_second;
                 $favorite->first_name_kana = $user->person_name_first_kana;
                 $favorite->second_name_kana = $user->person_name_second_kana;
+                $favorite->tel1 = $user->tel1;
+                $favorite->tel2 = $user->tel2;
+                $favorite->tel3 = $user->tel3;
                 $favorite->gender = $user->gender != null ? $user->gender : 1;
                 $favorite->save();
             } else {
-                $user = LPEmployee::where('id', $selected_id)->first();
+                $user = Staff::where('id', $selected_id)->first();
                 $favorite->user_id = $userId;
                 $favorite->selected_id = $selected_id;
                 $favorite->type = $type;
@@ -223,6 +233,9 @@ class FavoriteController extends Controller
                 $favorite->second_name  = $user->person_name_second;
                 $favorite->first_name_kana = $user->person_name_first_kana;
                 $favorite->second_name_kana = $user->person_name_second_kana;
+                $favorite->tel1 = $user->tel1;
+                $favorite->tel2 = $user->tel2;
+                $favorite->tel3 = $user->tel3;
                 $favorite->gender = $user->gender != null ? $user->gender : 1;
                 $favorite->save();
             }
@@ -238,32 +251,43 @@ class FavoriteController extends Controller
     public function getFavoriteAddList(Request $request)
     {
         $keyword = $request->keyword;
-        $logiphoneEmployees = DB::connection('mysql_lp')
-                                ->table('employees')
-                                ->select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender', DB::raw("'logiphone' as source"))
-                                ->where('person_name_second', 'like', "%{$keyword}%")
-                                ->orWhere('person_name_first', 'like', "%{$keyword}%")
-                                ->orWhere('person_name_second_kana', 'like', "%{$keyword}%")
-                                ->orWhere('person_name_first_kana', 'like', "%{$keyword}%")
-                                ->orWhere('nickname', 'like', "%{$keyword}%");
+        $logiscopeOldEmployees = DB::connection('mysql_old')
+                                ->table('staff')
+                                ->select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'gender')
+                                ->where('person_name_second', 'like', '%' . $keyword . '%')
+                                ->orWhere('person_name_first', 'like', '%' . $keyword . '%')
+                                ->orWhere('person_name_second_kana', 'like', '%' . $keyword . '%')
+                                ->orWhere('person_name_first_kana', 'like', '%' . $keyword . '%')->get()
+                                ->map(function ($user) {
+                                    $user->gender = $user->gender == "null" ? 1 : $user->gender;
+                                    $user->type = 1;
+                                    return $user;
+                                });
 
         $logiscopeEmployees = DB::connection('mysql')
                                 ->table('company_employees')
-                                ->select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'nickname', 'gender', DB::raw("'logiscope' as source"))
-                                ->where('person_name_second', 'like', "%{$keyword}%")
-                                ->orWhere('person_name_first', 'like', "%{$keyword}%")
-                                ->orWhere('person_name_second_kana', 'like', "%{$keyword}%")
-                                ->orWhere('person_name_first_kana', 'like', "%{$keyword}%")
-                                ->orWhere('nickname', 'like', "%{$keyword}%");
+                                ->select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'gender')
+                                ->where('person_name_second', 'like', '%' . $keyword . '%')
+                                ->orWhere('person_name_first', 'like', '%' . $keyword . '%')
+                                ->orWhere('person_name_second_kana', 'like', '%' . $keyword . '%')
+                                ->orWhere('person_name_first_kana', 'like', '%' . $keyword . '%')->get()
+                                ->map(function ($user) {
+                                    $user->gender = $user->gender == "null" ? 1 : $user->gender;
+                                    $user->type = 0;
+                                    return $user;
+                                });
+        
+        $allEmployees = $logiscopeOldEmployees->merge($logiscopeEmployees);
 
-        $unionQuery = $logiphoneEmployees->unionAll($logiscopeEmployees);
-        $paginatedEmployees = $unionQuery->paginate(20);
-
-        $paginatedEmployees->getCollection()->transform(function ($user) {
-            $user->gender = $user->gender == "null" ? 1 : $user->gender;
-            $user->type = $user->source == "logiphone" ? 1 : 0;
-            return $user;
-        });
+        $page = request('page', 1);
+        $perPage = 20;
+        $paginatedEmployees = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allEmployees->forPage($page, $perPage),
+            $allEmployees->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return response()->json($paginatedEmployees);
     }

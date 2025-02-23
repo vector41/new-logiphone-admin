@@ -20,41 +20,42 @@ const loading = ref(true);
 const page_unit_count = ref();
 
 onMounted(() => {
-    loading.value=false;
+    loading.value = false;
 });
 
 const settingMenuItem = (item) => {
     selected_item.value = item;
 }
 
-const settingExchanged = (val)=>{
+const settingExchanged = (val) => {
     is_exchanged.value = val;
 }
 
-const settingUnitCount = async (val)=>{
+const settingUnitCount = async (val) => {
     console.log('first_unit_count ', val);
     let update_res = await updateUnitSetting(val);
-    if(update_res){
-        page_unit_count.value = table_row_counts.filter(t=>t.count==update_res)[0].count;
-        console.log('dfd ',page_unit_count.value)
+    if (update_res) {
+        page_unit_count.value = table_row_counts.filter(t => t.count == update_res)[0].count;
+        console.log('dfd ', page_unit_count.value)
     }
 }
 
 </script>
 
 <template>
+
     <Head title="Dashboard" />
 
     <div class="flex flex-col h-screen overflow-hidden">
-        <HeaderBar :item="selected_item" :exchanged="is_exchanged" @setting_exchanged = "settingExchanged"/>
+        <HeaderBar :item="selected_item" :exchanged="is_exchanged" @setting_exchanged="settingExchanged" />
         <div class="flex w-full h-[calc(100vh-48px)]">
             <div class="shrink items-center">
-                <SideMenu @seleted_menu_item="settingMenuItem" :exchanged = "is_exchanged"/>
+                <SideMenu @seleted_menu_item="settingMenuItem" :exchanged="is_exchanged" />
             </div>
             <div class="flex flex-col items-center content-part">
-                <TitleBar :item="selected_item" @setting_unit_count = "settingUnitCount"/>
-                <Toast position="center"/>
-                <div class="w-fill px-10 min-h-[500px]">
+                <TitleBar :item="selected_item" @setting_unit_count="settingUnitCount" />
+                <Toast position="center" />
+                <div class="w-fill px-10 min-h-[500px] justify-center">
                     <slot :page_unit_count="page_unit_count" />
                 </div>
             </div>
@@ -101,5 +102,4 @@ const settingUnitCount = async (val)=>{
     color: #1a202c;
     color: rgba(26, 32, 44, var(--tw-text-opacity));
 }
-
 </style>

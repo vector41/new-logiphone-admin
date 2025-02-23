@@ -37,31 +37,39 @@ class AppDataController extends Controller
             ini_set('memory_limit', '2048M');
             $user_id = 1;
             $user = CompanyEmployee::find($user_id);
-            $company_in_users = CompanyEmployee::where('company_id',$user->company_id)->get();
-            $company_in_user_ids =  $company_in_users->map(function($item){
+            $company_in_users = CompanyEmployee::where('company_id', $user->company_id)->get();
+            $company_in_user_ids =  $company_in_users->map(function($item) {
                 return $item->id;
             });
 
-            $store_pos = $request->store_pos??null;
-            $main_category = $request->main_category??null;
-            $filter_method = $request->filter_method??null;
+            $store_pos = $request->store_pos ?? null;
+            $main_category = $request->main_category ?? null;
+            $filter_method = $request->filter_method ?? null;
 
-            $data_builder = LPMergeData::whereIn('updated_id',$company_in_user_ids)->whereNotNull('name');
+            $data_builder = LPMergeData::whereIn('updated_id', $company_in_user_ids)->whereNotNull('name');
 
-            if($store_pos)$data_builder->where('store_pos', $store_pos);
-            if($main_category)$data_builder->where('main_cat', $main_category);
+            if($store_pos) $data_builder->where('store_pos', $store_pos);
+            if($main_category) $data_builder->where('main_cat', $main_category);
 
-            $data = $filter_method?$data_builder->whereNotNull("prefecture")->orderBy("prefecture", "asc")->paginate(50):$data_builder->whereNotNull("name")->whereNot("name","="," ")->orderBy("name", "asc")->paginate(50);
+            $data = $filter_method ? $data_builder->whereNotNull('prefecture')
+                                                  ->orderBy('prefecture', 'asc')
+                                                  ->paginate(50)
+                                   : $data_builder->whereNotNull('name')
+                                                  ->whereNot('name', '=', ' ')
+                                                  ->orderBy('name', 'asc')
+                                                  ->paginate(50);
+
             $current_page = $data->currentPage();
             $last_page = $data->lastPage();
             $total = $data->total();
             $per_page = $data->perPage();
+
             return $ApiClass->responseOk([
-                "current_page"=>$current_page,
-                "last_page"=>$last_page,
-                "total" =>$total,
-                "per_page"=>$per_page,
-                "response" => $data->items(),
+                'current_page' => $current_page,
+                'last_page' => $last_page,
+                'total' => $total,
+                'per_page' => $per_page,
+                'response' => $data->items(),
             ]);
         } catch (\Exception $e) {
             //throw $th;
@@ -70,9 +78,10 @@ class AppDataController extends Controller
         }
     }
 
-    function getRolesFromEmployeeRole($employeerRoles){
+    function getRolesFromEmployeeRole($employeerRoles)
+    {
         $roles = [];
-        foreach($employeerRoles as $role){
+        foreach($employeerRoles as $role) {
             array_push($roles, $role->role);
         }
         return $roles;
@@ -80,10 +89,12 @@ class AppDataController extends Controller
 
     public function select(ApiClass $ApiClass, Request $request)
     {
-        $CompanyEmployees  = CompanyEmployee::selectRaw("id as id, CONCAT(person_name_second, ' ', person_name_first) as value")->where("company_branch_id", $request->company_branch_id)->get();
+        $CompanyEmployees = CompanyEmployee::selectRaw('id as id, CONCAT(person_name_second, " ", person_name_first) as value')
+                                           ->where('company_branch_id', $request->company_branch_id)
+                                           ->get();
 
         return $ApiClass->responseOk([
-            "responses" => $CompanyEmployees
+            'responses' => $CompanyEmployees
         ]);
     }
 
@@ -93,7 +104,7 @@ class AppDataController extends Controller
      * @param  Request  $request
      * @return object
      */
-    public function get(ApiClass $ApiClass, Request $request )
+    public function get(ApiClass $ApiClass, Request $request)
     {
         $id = $request->id;
 
@@ -102,54 +113,60 @@ class AppDataController extends Controller
             $lp_merge_data = LPMergeData::find($id);
 
             $detail_data = null;
-            if($lp_merge_data){
-                if($lp_merge_data->main_cat==1){
-                    if($lp_merge_data->store_pos==1){
-                        $branch_item = LPCompanyBranch::with('company')->where('id',$lp_merge_data->source_id)->first();
-                        $detail_data['name'] =  $branch_item?$branch_item->company->company_name:'';
-                        $detail_data['name_kana'] =  $branch_item?$branch_item->company->company_name_kana:'';
+            if($lp_merge_data) {
+                if($lp_merge_data->main_cat == 1) {
+                    if($lp_merge_data->store_pos == 1) {
+                        $branch_item = LPCompanyBranch::with('company')
+                                                      ->where('id', $lp_merge_data->source_id)
+                                                      ->first();
+
+                        $detail_data['name'] = $branch_item ? $branch_item->company->company_name : '';
+                        $detail_data['name_kana'] = $branch_item ? $branch_item->company->company_name_kana : '';
                         $detail_data['main_cat'] = 1;
                         $detail_data['store_pos'] = 1;
-                        $detail_data['tel'] =  $branch_item?$branch_item->tel:'';
-                        $detail_data['fax'] =  $branch_item?$branch_item->fax:'';
-                    }else{
-                        $branch_item = CompanyBranch::with('company')->where('id',$lp_merge_data->source_id)->first();
-                        $detail_data['name'] =  $branch_item?$branch_item->company->company_name:'';
-                        $detail_data['name_kana'] =  $branch_item?$branch_item->company->company_name_kana:'';
+                        $detail_data['tel'] = $branch_item ? $branch_item->tel : '';
+                        $detail_data['fax'] = $branch_item ? $branch_item->fax : '';
+                    } else {
+                        $branch_item = CompanyBranch::with('company')
+                                                    ->where('id',$lp_merge_data->source_id)
+                                                    ->first();
+
+                        $detail_data['name'] = $branch_item ? $branch_item->company->company_name : '';
+                        $detail_data['name_kana'] = $branch_item ? $branch_item->company->company_name_kana : '';
                         $detail_data['main_cat'] = 1;
                         $detail_data['store_pos'] = 2;
-                        $detail_data['tel'] =  $branch_item?$branch_item->tel:'';
-                        $detail_data['fax'] =  $branch_item?$branch_item->fax:'';
+                        $detail_data['tel'] = $branch_item ? $branch_item->tel : '';
+                        $detail_data['fax'] = $branch_item ? $branch_item->fax : '';
                     }
-                }else{
-                    if($lp_merge_data->store_pos==1){
+                } else {
+                    if($lp_merge_data->store_pos==1) {
                         $employee_item = LPCompanyEmployee::find($lp_merge_data->source_id);
-                        $detail_data['name'] =  $employee_item?$employee_item->person_name_second.' '.$employee_item->person_name_first:'';
-                        $detail_data['name_kana'] =  $employee_item?$employee_item->person_name_second_kana.' '.$employee_item->person_name_first_kana:'';
+                        $detail_data['name'] = $employee_item ? $employee_item->person_name_second . ' ' . $employee_item->person_name_first : '';
+                        $detail_data['name_kana'] = $employee_item ? $employee_item->person_name_second_kana . ' ' . $employee_item->person_name_first_kana : '';
                         $detail_data['main_cat'] = 2;
                         $detail_data['store_pos'] = 1;
-                        $detail_data['tel'] =  $employee_item?$employee_item->tel1:'';
-                        $detail_data['tel2'] =  $employee_item?$employee_item->tel2:'';
-                        $detail_data['tel3'] =  $employee_item?$employee_item->tel3:'';
+                        $detail_data['tel'] = $employee_item ? $employee_item->tel1 : '';
+                        $detail_data['tel2'] = $employee_item ? $employee_item->tel2 : '';
+                        $detail_data['tel3'] = $employee_item ? $employee_item->tel3 : '';
                     }else{
                         $employee_item = CompanyEmployee::find($lp_merge_data->source_id);
-                        $detail_data['name'] =  $employee_item?$employee_item->person_name_second.' '.$employee_item->person_name_first:'';
-                        $detail_data['name_kana'] =  $employee_item?$employee_item->person_name_second_kana.' '.$employee_item->person_name_first_kana:'';
+                        $detail_data['name'] = $employee_item ? $employee_item->person_name_second . ' ' . $employee_item->person_name_first : '';
+                        $detail_data['name_kana'] = $employee_item ? $employee_item->person_name_second_kana . ' ' . $employee_item->person_name_first_kana : '';
                         $detail_data['main_cat'] = 2;
                         $detail_data['store_pos'] = 2;
-                        $detail_data['tel'] =  $employee_item?$employee_item->tel1:'';
-                        $detail_data['tel2'] =  $employee_item?$employee_item->tel2:'';
-                        $detail_data['tel3'] =  $employee_item?$employee_item->tel3:'';
+                        $detail_data['tel'] = $employee_item ? $employee_item->tel1 : '';
+                        $detail_data['tel2'] = $employee_item ? $employee_item->tel2 : '';
+                        $detail_data['tel3'] = $employee_item ? $employee_item->tel3 : '';
                     }
                 }
                 return $ApiClass->responseOk([
-                    "response" => $detail_data,
+                    'response' => $detail_data,
                 ]);
             }
-            return $ApiClass->responseError("保存に失敗しました");
+            return $ApiClass->responseError('保存に失敗しました');
         } catch (\Exception $e) {
             //throw $e;
-            return $ApiClass->responseError("保存に失敗しました");
+            return $ApiClass->responseError('保存に失敗しました');
         }
     }
 
@@ -164,7 +181,7 @@ class AppDataController extends Controller
         try {
             DB::beginTransaction();
 
-            $CompanyEmployee = CompanyEmployee::firstOrNew(["id" => $request->id]);
+            $CompanyEmployee = CompanyEmployee::firstOrNew(['id' => $request->id]);
             $CompanyBranch = CompanyBranch::find($request->company_branch_id);
             $CompanyEmployee->inputToModel($request->input());
             // $CompanyEmployee->uploadFile($request->input());
@@ -173,19 +190,19 @@ class AppDataController extends Controller
             $CompanyEmployee->save();
 
             //役割
-            $roles = $request->input("employment_roles");
+            $roles = $request->input('employment_roles');
 
             if (!$roles) {
                 $roles = [];
             }
 
-            $CompanyEmployee->updateChildArray(CompanyEmployeeRole::class, $roles, "role");
+            $CompanyEmployee->updateChildArray(CompanyEmployeeRole::class, $roles, 'role');
             DB::commit();
 
             return $ApiClass->responseOk([]);
         } catch (\Exception $e) {
             Log::info($e);
-            return $ApiClass->responseError("保存に失敗しました");
+            return $ApiClass->responseError('保存に失敗しました');
         }
     }
 
@@ -199,12 +216,12 @@ class AppDataController extends Controller
     {
         try {
             DB::beginTransaction();
-            LPCompanyEmployee::whereIn("id", $request->ids)->get();
+            LPCompanyEmployee::whereIn('id', $request->ids)->get();
             DB::commit();
             return $ApiClass->responseOk([]);
         } catch (\Exception $e) {
             Log::info($e);
-            return $ApiClass->responseError("削除に失敗しました");
+            return $ApiClass->responseError('削除に失敗しました');
         }
     }
 
