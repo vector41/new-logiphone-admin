@@ -258,3 +258,79 @@ param:
 */
 
 Route::get('/send-sms', [SmsController::class, 'sendSMS']);
+
+
+
+
+
+
+// Logiscope-old Android code
+
+Route::get('/get-oldlogi-list', [EmployeeController::class, 'getAllUsersByPageInOldPeople']);
+
+
+/*
+param:
+    {
+        (keyword) search users by keyword(name search)
+    }
+*/
+
+Route::get('/search-old-user', [EmployeeController::class, 'searchOldUser']);
+
+
+/*
+param:
+    {
+        (keyword) search users by keyword(kana search)
+    }
+*/
+
+Route::get('/search-user-by-kana', [EmployeeController::class, 'searchUserByKana']);
+
+/*
+param:
+    {
+        (company, people, individual) search users by keyword(kana search)
+    }
+*/
+
+Route::get('/search-user-by-company', [EmployeeController::class, 'searchUserByCompany']);
+
+
+/*
+param:
+    {
+        keyword
+    }
+*/
+
+Route::get('/search-company-by-name',[CompanyController::class, 'searchCompanyByName']);
+
+
+/*
+param:
+    {
+        no param
+    }
+*/
+
+Route::get('/get-old-all-companies', [CompanyController::class, 'getOldAllCompanies']);
+
+/*
+param:
+    {
+        keyword
+    }
+*/
+
+Route::get('/search-oldCompany-by-name', [CompanyController::class, 'searchOldCompanyByName']);
+
+/*
+param:
+    {
+        id, type
+    }
+*/
+
+Route::get('/get-company-details', [CompanyController::class, 'getCompanyDetails']);

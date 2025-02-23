@@ -69,13 +69,13 @@ export const employeer_role_names = [
     { id: 2, name: "乗務員" },
     { id: 3, name: "事務員" },
     { id: 4, name: "配車" },
-    { id: 5, name: "管理者" }
+    { id: 5, name: "管理者" },
 ];
 
 export const genders = [
     { id: 1, name: "男性" },
     { id: 2, name: "女性" },
-    { id: 3, name: "不明" }
+    { id: 3, name: "不明" },
 ];
 
 export const legal_personality = [
@@ -83,24 +83,23 @@ export const legal_personality = [
     { id: 2, name: "有限会社" },
     { id: 3, name: "協同組合" },
     { id: 4, name: "合同会社" },
-    { id: 5, name: "上記以外" }
+    { id: 5, name: "上記以外" },
 ];
 
 export const legal_personality_position = [
     { id: 1, name: "会社名の前" },
-    { id: 2, name: "会社名の後" }
+    { id: 2, name: "会社名の後" },
 ];
 
 export const regist_site = [
     { id: 1, name: "WebKIT" },
     { id: 2, name: "ローカルネット" },
-    { id: 3, name: "トラボックス" }
+    { id: 3, name: "トラボックス" },
 ];
 
 export const store_postions = [
-    { id: 0, name: "全て表示" },
+    { id: 1, name: "ロジフォン表示" },
     { id: 2, name: "ロジスコープ表示" },
-    { id: 1, name: "ロジフォン表示" }
 ];
 
 export const call_data = [
@@ -144,7 +143,7 @@ export const call_data = [
     //     incoming_call:3,
     //     call_time_incoming:20,
     // },
-]
+];
 
 export const call_data_detail = [
     // {
@@ -163,7 +162,7 @@ export const call_data_detail = [
     //     period: "2",
     //     type: "着信" // incoming, chaksin
     // }
-]
+];
 
 export const sms_data = [
     {
@@ -183,145 +182,120 @@ export const sms_data = [
         fullName: "松井 善行",
         sendCount: "3回",
         receiveCount: "5回",
-    }
-]
+    },
+];
 
 export const sms_detail_history = [
     {
         date: "2024-01-10",
         name: "取引先",
         phone_number: "029-29-1920",
-        type: "送信"
+        type: "送信",
     },
     {
         date: "2024-01-12",
         name: "取引",
         phone_number: "029-29-1920",
-        type: "受け取った"
-    }
-]
+        type: "受け取った",
+    },
+];
 
-export const sms_histories = [
-
-]
+export const sms_histories = [];
 
 export const table_row_counts = [
     { id: 1, count: 50 },
     { id: 2, count: 100 },
     { id: 3, count: 300 },
     { id: 4, count: 500 },
-    { id: 5, count: 1000 }
+    { id: 5, count: 1000 },
 ];
 
 export const menu_items = [
     {
-        label: '取引先',
-        icon: 'pi pi-envelope',
-        expand: '',
+        label: "取引先",
+        icon: "pi pi-envelope",
+        expand: "",
         items: [
             {
-                label: '取引先一覧',
-                icon: 'pi pi-bars',
+                label: "取引先一覧",
+                icon: "pi pi-bars",
                 selected: false,
-                background: 'transparent',
-                color: 'white',
-                component: 'companies'
+                background: "transparent",
+                color: "white",
+                component: "companies",
             },
             {
-                label: '取引先追加',
-                icon: 'pi pi-plus',
+                label: "取引先追加",
+                icon: "pi pi-plus",
                 selected: false,
-                background: 'transparent',
-                color: 'white',
-                component: 'companyreg'
-            }
-        ]
+                background: "transparent",
+                color: "white",
+                component: "companyreg",
+            },
+        ],
     },
     {
-        label: '担当者',
-        icon: 'pi pi-user',
-        expand: '',
+        label: "担当者",
+        icon: "pi pi-user",
+        expand: "",
         items: [
             {
-                label: '担当者一覧',
-                icon: 'pi pi-bars',
+                label: "担当者一覧",
+                icon: "pi pi-bars",
                 selected: false,
-                background: 'transparent',
-                color: 'white',
-                component: 'emplyeers'
+                background: "transparent",
+                color: "white",
+                component: "emplyeers",
             },
             {
-                label: '担当者追加',
-                icon: 'pi pi-user-plus',
+                label: "担当者追加",
+                icon: "pi pi-user-plus",
                 selected: false,
-                background: 'transparent',
-                color: 'white',
-                component: 'addemplyeer'
-            }
-        ]
-    },
-
-    // {
-    //     label: '通話履歴',
-    //     icon: 'pi pi-phone',
-    //     expand: '',
-    //     items: [
-    //         {
-    //             label: '発信/着信',
-    //             icon: 'pi pi-phone',
-    //             selected: false,
-    //             background: 'transparent',
-    //             color: 'white',
-    //             component: 'callhistories'
-    //         }
-    //     ]
-    // },
-    {
-        label: 'SMS履歴',
-        icon: 'pi pi-comments',
-        expand: '',
-        items: [
-            {
-                label: '発信/着信',
-                icon: 'pi pi-comments',
-                selected: false,
-                background: 'transparent',
-                color: 'white',
-                component: 'sendsms'
-            }
-        ]
+                background: "transparent",
+                color: "white",
+                component: "addemplyeer",
+            },
+        ],
     },
     {
-        label: '会社設定',
-        icon: 'pi pi-cog',
-        expand: '',
+        label: "電話帳",
+        icon: "pi pi-phone",
+        selected: false,
+        background: "transparent",
+        color: "white",
+        component: "phoneBookContent",
+    },
+    {
+        label: "会社設定",
+        icon: "pi pi-cog",
+        expand: "",
         items: [
             {
-                label: '会社設定',
-                icon: 'pi pi-user-plus',
+                label: "会社設定",
+                icon: "pi pi-user-plus",
                 selected: false,
-                background: 'transparent',
-                color: 'white',
-                component: 'companyinfo'
+                background: "transparent",
+                color: "white",
+                component: "companyinfo",
             },
             {
-                label: '社員一覧',
-                icon: 'fa-solid fa-list',
+                label: "社員一覧",
+                icon: "fa-solid fa-list",
                 selected: false,
-                background: 'transparent',
-                color: 'white',
-                component: 'members'
+                background: "transparent",
+                color: "white",
+                component: "members",
             },
             {
-                label: '電話帳設定',
-                icon: 'fa-solid fa-list',
+                label: "電話帳設定",
+                icon: "fa-solid fa-list",
                 selected: false,
-                background: 'transparent',
-                color: 'white',
-                component: 'phoneBook'
-            }
-        ]
-    }
+                background: "transparent",
+                color: "white",
+                component: "phoneBookContentSetting",
+            },
+        ],
+    },
 ];
 
 export const typesCategories = [

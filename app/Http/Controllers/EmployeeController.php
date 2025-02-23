@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use PhpParser\Node\Expr\ArrayItem;
 
 
 /**
@@ -38,7 +39,101 @@ class EmployeeController extends Controller
             //code...
             $user = Auth::user();
             $user_id = $user->id;
-            $unit_count_by_setting = Setting::where('auth_id', $user_id)->first() ? Setting::where('auth_id', $user_id)->first()->unit_count : 1;
+            $unit_count_by_setting = Setting::where('auth_id', $user_id)->first() ? Setting::where('auth_id', $user_id)->first()->unit_count : 50;
+            $unit_count_obj = array_values(array_filter(config('customs.unit_count'), function ($item) use ($unit_count_by_setting) {
+                return $item['id'] === $unit_count_by_setting;
+            }));
+            $unit_count = count($unit_count_obj) > 0 ? $unit_count_obj[0]['value'] : config('customs.unit_count')[0]['value'];
+            $company_in_user_ids = CompanyEmployee::where('company_id', $user->company_id)->pluck('company_id');
+
+            $store_pos = $request->store_pos;
+            $type_cates = $request->type_cates;
+            $keyword = $request->keyword;
+            $pref = $request->pref;
+            $address = $request->address;
+
+            $data_builder = LPEmployee::whereIn('company_id', values: $company_in_user_ids);
+            if ($store_pos) $data_builder->where('store_pos', $store_pos);
+            if ($pref) $data_builder->where('prefecture', $pref);
+            if ($address) $data_builder->where('other', 'like', '%' . $address . '%');
+            if ($keyword) {
+                $data_builder->where(function ($q) use ($keyword) {
+                    $q->orWhere('tel1', 'like', '%' . $keyword . '%')
+                        ->orWhere('tel2', 'like', '%' . $keyword . '%')
+                        ->orWhere('tel3', 'like', '%' . $keyword . '%')
+                        ->orWhere('person_name_second', 'like', '%' . $keyword . '%')
+                        ->orWhere('person_name_first', 'like', '%' . $keyword . '%')
+                        ->orWhere('person_name_first', 'like', '%' . $keyword . '%')
+                        ->orWhere('person_name_second_kana', 'like', '%' . $keyword . '%')
+                        ->orWhere('person_name_first_kana', 'like', '%' . $keyword . '%')
+                        ->orWhere('email', 'like', '%' . $keyword . '%');
+                        // ->orWhere('company_name', 'like', '%' . $keyword . '%');
+                });
+            }
+            $data = $data_builder->orderBy("id", "asc")->paginate($unit_count_by_setting);
+
+            $response_data = [];
+            foreach ($data->items() as $key => $employeer) {
+                # code...
+
+                $company = $employeer->store_pos == 2 ? Company::find($employeer->company_id) : LPCompany::find($employeer->company_id);
+                $config = configSearchKey("customs.legal_personality", $company->legal_personality);
+
+                $legal = "(" . mb_substr($config["value"], 0, 1) . ")";
+
+                $company_name_full_short = "";
+
+                if ($company->legal_personality_position == 1) {
+                    $company_name_full_short = $legal . $company->company_name;
+                } else {
+                    $company_name_full_short = $company->company_name . $legal;
+                }
+                $register = $employeer->updated_id ? CompanyEmployee::find($employeer->updated_id) : null;
+                $branch = $employeer->store_pos == 2 ? CompanyBranch::find($employeer->company_branch_id) : LPCompanyBranch::find($employeer->company_branch_id);
+                $response_data[] = [
+                    'id' => $employeer->id,
+                    'store_pos' => $employeer->store_pos,
+                    'register' => $register ? $register->person_name_second . ' ' . $register->person_name_first : '',
+                    'created_at' => $employeer->created_at,
+                    'updated_at' => $employeer->updated_at,
+                    'person_name' => $employeer->person_name_second . ' ' . $employeer->person_name_first,
+                    'person_name_kana' => $employeer->person_name_second_kana . ' ' . $employeer->person_name_first_kana,
+                    'tel' => $employeer->tel1,
+                    'email' => $employeer->email,
+                    'position' => $employeer->position,
+                    'gender' => $employeer->gender,
+                    'company_name_full_short' => $company_name_full_short,
+                    'branch_name' => $branch ? $branch->branch_name : '',
+                    'branch_prefecture' => $branch ? $branch->prefecture : '',
+                    'branch_city' => $branch ? $branch->city : '',
+                    'branch_tel' => $branch ? $branch->tel : '',
+                    'roles' => $employeer->employment_roles
+                ];
+            }
+            $current_page = $data->currentPage();
+            $last_page = $data->lastPage();
+            $total = $data->total();
+
+            return $ApiClass->responseOk([
+                "current_page" => $current_page,
+                "last_page" => $last_page,
+                "total" => $total,
+                "response" => $response_data,
+            ]);
+        } catch (\Exception $e) {
+            //throw $th;
+            Log::info($e);
+            return $ApiClass->responseError($e->getMessage());
+        }
+    }
+
+    public function getUserList(ApiClass $ApiClass, Request $request)
+    {
+        try {
+            //code...
+            $user = Auth::user();
+            $user_id = $user->id;
+            $unit_count_by_setting = Setting::where('auth_id', $user_id)->first() ? Setting::where('auth_id', $user_id)->first()->unit_count : 50;
             $unit_count_obj = array_values(array_filter(config('customs.unit_count'), function ($item) use ($unit_count_by_setting) {
                 return $item['id'] === $unit_count_by_setting;
             }));
@@ -54,7 +149,9 @@ class EmployeeController extends Controller
             $pref = $request->pref;
             $address = $request->address;
 
-            $data_builder = LPEmployee::whereIn('updated_id', $company_in_user_ids);
+            $data_builder = LPEmployee::whereIn('updated_id', values: $company_in_user_ids);
+            $data_builder->whereNull('email') // Ensure email is not NULL
+                             ->orWhere('email', '=', '');
             if ($store_pos) $data_builder->where('store_pos', $store_pos);
             if ($pref) $data_builder->where('prefecture', $pref);
             if ($address) $data_builder->where('other', 'like', '%' . $address . '%');
@@ -68,10 +165,10 @@ class EmployeeController extends Controller
                         ->orWhere('person_name_first', 'like', '%' . $keyword . '%')
                         ->orWhere('person_name_second_kana', 'like', '%' . $keyword . '%')
                         ->orWhere('person_name_first_kana', 'like', '%' . $keyword . '%')
-                        ->orWhere('email', 'like', '%' . $keyword . '%')
                         ->orWhere('company_name', 'like', '%' . $keyword . '%');
                 });
             }
+
             $data = $data_builder->orderBy("id", "asc")->paginate($unit_count_by_setting);
 
             $response_data = [];
@@ -114,6 +211,9 @@ class EmployeeController extends Controller
             $current_page = $data->currentPage();
             $last_page = $data->lastPage();
             $total = $data->total();
+
+            // $authUser = Auth::user();
+            // return $authUser;
             return $ApiClass->responseOk([
                 "current_page" => $current_page,
                 "last_page" => $last_page,
@@ -386,5 +486,14 @@ class EmployeeController extends Controller
         $id = $request->id;
         $employees = DB::select("SELECT id, CONCAT(person_name_second,' ', person_name_first) AS name FROM company_employees WHERE company_branch_id = $id");
         return $employees;
+    }
+
+    public function getAllUsersByPageInOldPeople(Request $request)
+    {
+        $authUser = Auth::user();
+        $unit_count_by_setting = Setting::where('auth_id', $authUser->id)->first() ? Setting::where('auth_id', $authUser->id)->first()->unit_count : 50;
+
+
+        // $users = Staff::where('company', $authUser->company_id)->get();
     }
 }

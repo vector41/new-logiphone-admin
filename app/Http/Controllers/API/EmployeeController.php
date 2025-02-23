@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+// Use the Old logiscope model
+use App\Models\LogiScopeOld\Staff;
+
 
 /**
  *	取引先の担当者関連
@@ -36,47 +39,47 @@ class EmployeeController extends Controller
             ini_set('memory_limit', '2048M');
             $user_id = 1;
             $user_company_id = CompanyEmployee::find($user_id)->company_id;
-            $users_from_company = CompanyEmployee::where("company_id", $user_company_id)->select('id')->get();
+            $users_from_company = CompanyEmployee::where('company_id', $user_company_id)->select('id')->get();
             $user_ids = $users_from_company->map(function ($user) {
                 return $user->id;
             })->toArray();
 
-            $datas = CompanyEmployee::with(["companyBranch"])
+            $datas = CompanyEmployee::with(['companyBranch'])
                 ->where(function ($builder) {
-                    $builder->orWhereNull("company_employees.is_retirement");
-                    $builder->orWhere("company_employees.is_retirement", "<>", 1);
+                    $builder->orWhereNull('company_employees.is_retirement');
+                    $builder->orWhere('company_employees.is_retirement', '<>', 1);
                 })
                 ->whereHas('companyBranch', function ($query) use ($user_ids) {
-                    $query->orWhereIn("updated_id", $user_ids);
-                })->orderBy("id", "desc")->limit(40)->get();
+                    $query->orWhereIn('updated_id', $user_ids);
+                })->orderBy('id', 'desc')->limit(40)->get();
 
             $response_2 = $datas->map(function ($employeer) {
                 return [
                     'id' => $employeer->id,
                     'store_pos' => 2,    // 2: logiscope  1:logiphone...
                     'person_name' => $employeer->person_name_second . ' ' . $employeer->person_name_first,
-                    'tel' =>  $employeer->tel1 != "--" ? $employeer->tel1 : $employeer->tel2,
+                    'tel' =>  $employeer->tel1 != '--' ? $employeer->tel1 : $employeer->tel2,
                     'email' => $employeer->email,
                 ];
             });
 
-            $lp_company_branches = LPCompanyBranch::where("company_id", $user_company_id)->get();
+            $lp_company_branches = LPCompanyBranch::where('company_id', $user_company_id)->get();
 
-            $datas = LPCompanyEmployee::with(["company", "companyBranch"])
-                ->orderBy("id", "DESC")->limit(40)->get()->append(["employment_roles"]);
+            $datas = LPCompanyEmployee::with(['company', 'companyBranch'])
+                ->orderBy('id', 'DESC')->limit(40)->get()->append(['employment_roles']);
             $response_1 = $datas->map(function ($employeer) {
                 return [
                     'id' => $employeer->id,
                     'store_pos' => 1,    // 2: logiscope  1:logiphone...
                     'person_name' => $employeer->person_name_second . ' ' . $employeer->person_name_first,
-                    'tel' => $employeer->tel1 != "--" ? $employeer->tel1 : $employeer->tel2,
+                    'tel' => $employeer->tel1 != '--' ? $employeer->tel1 : $employeer->tel2,
                     'email' => $employeer->email,
                 ];
             });
             $response = count($response_1) ? $response_1->merge($response_2) : $response_2;
             // return response()->json($response->toArray());
             return  $ApiClass->responseOk([
-                "response" => $response
+                'response' => $response
             ]);
         } catch (\Exception $e) {
             //throw $th;
@@ -96,10 +99,12 @@ class EmployeeController extends Controller
 
     public function select(ApiClass $ApiClass, Request $request)
     {
-        $CompanyEmployees  = CompanyEmployee::selectRaw("id as id, CONCAT(person_name_second, ' ', person_name_first) as value")->where("company_branch_id", $request->company_branch_id)->get();
+        $CompanyEmployees = CompanyEmployee::selectRaw("id as id, CONCAT(person_name_second, ' ', person_name_first) as value")
+                          ->where('company_branch_id', $request->company_branch_id)
+                          ->get();
 
         return $ApiClass->responseOk([
-            "responses" => $CompanyEmployees
+            'responses' => $CompanyEmployees
         ]);
     }
 
@@ -115,13 +120,13 @@ class EmployeeController extends Controller
         $store_pos = $request->store_pos;
         $id = $request->_id;
 
-        $CompanyEmployee = $store_pos == 2 ? CompanyEmployee::where("id", $id)->first()
-            ->append(["employment_roles"]) : LPCompanyEmployee::where("id", $id)->first()
-            ->append(["employment_roles"]);
-        //  ->append(["job_changes", "employment_roles", "board_member", "resume", "license", "photo", "name_card", "other_file"]);
+        $CompanyEmployee = $store_pos == 2 ? CompanyEmployee::where('id', $id)->first()
+            ->append(['employment_roles']) : LPCompanyEmployee::where('id', $id)->first()
+            ->append(['employment_roles']);
+        //  ->append(['job_changes', 'employment_roles', 'board_member', 'resume', 'license', 'photo', 'name_card', 'other_file']);
 
         return $ApiClass->responseOk([
-            "response" => $CompanyEmployee,
+            'response' => $CompanyEmployee,
         ]);
     }
 
@@ -136,7 +141,7 @@ class EmployeeController extends Controller
         try {
             DB::beginTransaction();
 
-            $CompanyEmployee = CompanyEmployee::firstOrNew(["id" => $request->id]);
+            $CompanyEmployee = CompanyEmployee::firstOrNew(['id' => $request->id]);
             $CompanyBranch = CompanyBranch::find($request->company_branch_id);
             $CompanyEmployee->inputToModel($request->input());
             // $CompanyEmployee->uploadFile($request->input());
@@ -145,19 +150,19 @@ class EmployeeController extends Controller
             $CompanyEmployee->save();
 
             //役割
-            $roles = $request->input("employment_roles");
+            $roles = $request->input('employment_roles');
 
             if (!$roles) {
                 $roles = [];
             }
 
-            $CompanyEmployee->updateChildArray(CompanyEmployeeRole::class, $roles, "role");
+            $CompanyEmployee->updateChildArray(CompanyEmployeeRole::class, $roles, 'role');
             DB::commit();
 
             return $ApiClass->responseOk([]);
         } catch (\Exception $e) {
             Log::info($e);
-            return $ApiClass->responseError("保存に失敗しました");
+            return $ApiClass->responseError('保存に失敗しました');
         }
     }
 
@@ -171,12 +176,12 @@ class EmployeeController extends Controller
     {
         try {
             DB::beginTransaction();
-            LPCompanyEmployee::whereIn("id", $request->ids)->get();
+            LPCompanyEmployee::whereIn('id', $request->ids)->get();
             DB::commit();
             return $ApiClass->responseOk([]);
         } catch (\Exception $e) {
             Log::info($e);
-            return $ApiClass->responseError("削除に失敗しました");
+            return $ApiClass->responseError('削除に失敗しました');
         }
     }
 
@@ -191,23 +196,23 @@ class EmployeeController extends Controller
         try {
             DB::beginTransaction();
             $input = $request->employee;
-            $CompanyEmployee = LPCompanyEmployee::firstOrNew(["id" => $input["id"]]);
+            $CompanyEmployee = LPCompanyEmployee::firstOrNew(['id' => $input['id']]);
             $CompanyEmployee->inputToModel($input);
             $CompanyEmployee->save();
 
             //役割
-            $roles = $input["roles"];
+            $roles = $input['roles'];
 
             if (!$roles) {
                 $roles = [];
             }
             $employee_id = $CompanyEmployee->id;
-            LPCompanyEmployeeRole::where("company_employee_id", $employee_id)->delete();
+            LPCompanyEmployeeRole::where('company_employee_id', $employee_id)->delete();
             foreach ($roles as $key => $role) {
                 # code...
                 LPCompanyEmployeeRole::create([
-                    "company_employee_id" => $employee_id,
-                    "role" => $role,
+                    'company_employee_id' => $employee_id,
+                    'role' => $role,
                 ]);
             }
 
@@ -216,7 +221,7 @@ class EmployeeController extends Controller
             return $ApiClass->responseOk(['id' => $employee_id]);
         } catch (\Exception $e) {
             Log::info($e);
-            return $ApiClass->responseError("保存に失敗しました");
+            return $ApiClass->responseError('保存に失敗しました');
         }
     }
 
@@ -229,13 +234,13 @@ class EmployeeController extends Controller
     public function getEmployeeFromBranch(ApiClass $ApiClass, Request $request)
     {
         try {
-
             $type = $request->type;
             $branch_id = $request->id;
             $response = [];
+
             if ($type == 1) {
-                $datas = LPCompanyEmployee::where("company_branch_id", $branch_id)->get()
-                    ->append(["employment_roles"]);
+                $datas = LPCompanyEmployee::where('company_branch_id', $branch_id)->get()
+                    ->append(['employment_roles']);
                 $response = $datas->map(function ($employeer) {
                     return [
                         'id' => $employeer->id,
@@ -255,8 +260,8 @@ class EmployeeController extends Controller
                 });
                 return $ApiClass->responseOk(['response' => $response]);
             } else {
-                $datas = CompanyEmployee::where("company_branch_id", $branch_id)->get()
-                    ->append(["employment_roles"]);
+                $datas = CompanyEmployee::where('company_branch_id', $branch_id)->get()
+                    ->append(['employment_roles']);
                 $response = $datas->map(function ($employeer) {
                     return [
                         'id' => $employeer->id,
@@ -278,7 +283,7 @@ class EmployeeController extends Controller
             }
         } catch (\Exception $e) {
             Log::info($e);
-            return $ApiClass->responseError("保存に失敗しました");
+            return $ApiClass->responseError('保存に失敗しました');
         }
     }
 
@@ -294,55 +299,56 @@ class EmployeeController extends Controller
             DB::beginTransaction();
             $employeer = $request->employeer;
             $type = $employeer['store_pos'];
-            $roles = $employeer["roles"];
+            $roles = $employeer['roles'];
             if (!$roles) {
                 $roles = [];
             }
             if ($type == 1) {
-                $LPCompanyemployeer = LPCompanyEmployee::firstOrNew(["id" => getVariable($employeer, "id")]);
+                $LPCompanyemployeer = LPCompanyEmployee::firstOrNew(['id' => getVariable($employeer, 'id')]);
                 $LPCompanyemployeer->inputToModel($employeer);
                 $LPCompanyemployeer->save();
 
                 $employee_id = $LPCompanyemployeer->id;
-                LPCompanyEmployeeRole::where("company_employee_id", $employee_id)->whereNotIn('role', $roles)->delete();
+                LPCompanyEmployeeRole::where('company_employee_id', $employee_id)->whereNotIn('role', $roles)->delete();
                 foreach ($roles as $key => $role) {
                     # code...
-                    if (LPCompanyEmployeeRole::where("company_employee_id", $employee_id)->where("role", $role)->exists() == false) {
+                    if (LPCompanyEmployeeRole::where('company_employee_id', $employee_id)->where('role', $role)->exists() == false) {
                         LPCompanyEmployeeRole::create([
-                            "company_employee_id" => $employee_id,
-                            "role" => $role,
+                            'company_employee_id' => $employee_id,
+                            'role' => $role,
                         ]);
                     }
                 }
             } else {
-                $Companyemployeer = CompanyEmployee::firstOrNew(["id" => getVariable($employeer, "id")]);
+                $Companyemployeer = CompanyEmployee::firstOrNew(['id' => getVariable($employeer, 'id')]);
                 $Companyemployeer->inputToModel($employeer);
                 $Companyemployeer->save();
                 $employee_id = $Companyemployeer->id;
-                CompanyEmployeeRole::where("company_employee_id", $employee_id)->whereNotIn('role', $roles)->delete();
+                CompanyEmployeeRole::where('company_employee_id', $employee_id)->whereNotIn('role', $roles)->delete();
                 foreach ($roles as $key => $role) {
                     # code...
-                    if (CompanyEmployeeRole::where("company_employee_id", $employee_id)->where("role", $role)->exists() == false) {
+                    if (CompanyEmployeeRole::where('company_employee_id', $employee_id)->where('role', $role)->exists() == false) {
                         CompanyEmployeeRole::create([
-                            "company_employee_id" => $employee_id,
-                            "role" => $role,
+                            'company_employee_id' => $employee_id,
+                            'role' => $role,
                         ]);
                     }
                 }
             }
 
             DB::commit();
-            return $ApiClass->responseOk(["id" => $employeer["id"]]);
+            return $ApiClass->responseOk(['id' => $employeer['id']]);
         } catch (\Exception $e) {
             Log::info($e);
             return $ApiClass->responseError($e->getMessage());
         }
     }
 
-    // android code 
+    // android code
     public function getAllUsersByPage(Request $request)
     {
-        $users = CompanyEmployee::paginate(50);
+        $userCompanyID = config('app.userCompanyID');
+        $users = CompanyEmployee::where('company_id', $userCompanyID)->paginate(50);
         return response()->json($users);
     }
 
@@ -353,6 +359,55 @@ class EmployeeController extends Controller
                                 ->orWhere('tel2', '=', $searchIndex)
                                 ->orWhere('tel3', '=', $searchIndex)
                                 ->get();
+
+        return response()->json($users);
+    }
+
+
+    // Logiscope old code
+    public function searchOldUser(Request $request)
+    {
+        $keyword = $request->keyword;
+        $result = Staff::where('person_name_first', 'like', '%' . $keyword . '%')
+                        ->orWhere('person_name_second', 'like', '%' . $keyword . '%')
+                        ->paginate(30);
+        return response()->json($result);
+    }
+
+    public function searchUserByKana(Request $request)
+    {
+        $keyword = $request->keyword;
+
+        $result = Staff::where('person_name_first_kana', 'like', '%' . $keyword . '%')
+                        ->orWhere('person_name_second_kana', 'like', '%' . $keyword . '%')
+                        ->paginate(30);
+        return response()->json($result);
+    }
+
+    public function getAllUsersByPageInOldPeople(Request $request)
+    {
+        $id = $request->id;
+        $keyword = $request->keyword;
+        $sort = $request->sort;
+        $orderBy = $sort == 'normal' ? 'id' : 'person_name_second_kana';
+
+        $new_logi = CompanyEmployee::where('id', $id)->first();
+
+        $users = Staff::select('id', 'person_name_second', 'person_name_first', 'person_name_second_kana', 'person_name_first_kana', 'tel1', 'tel2', 'tel3', 'gender')
+                      ->where(function ($query) use ($keyword) {
+                            $query->where('person_name_second', 'like', '%' . $keyword . '%')
+                                  ->orWhere('person_name_first', 'like', '%' . $keyword . '%')
+                                  ->orWhere('person_name_second_kana', 'like', '%' . $keyword . '%')
+                                  ->orWhere('person_name_first_kana', 'like', '%' . $keyword . '%'); })
+                      ->where('company_id', $new_logi->company_id)
+                      ->where($orderBy, '<>', '')
+                      ->orderBy($orderBy, 'asc')
+                      ->paginate(30);
+
+        $users->getCollection()->transform(function ($user) {
+            $user->type = 1;
+            return $user;
+        });
 
         return response()->json($users);
     }
